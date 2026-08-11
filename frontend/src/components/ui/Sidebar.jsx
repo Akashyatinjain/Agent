@@ -24,7 +24,7 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className={`fixed lg:static inset-y-0 left-0 z-40 flex flex-col justify-between w-64 bg-[#0e1320] border-r border-gray-800/80 transition-all duration-300 ${
+      className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col justify-between w-64 bg-[#0e1320] border-r border-gray-800/80 transition-transform duration-300 shadow-2xl lg:shadow-none ${
         isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:w-16 lg:translate-x-0'
       }`}
     >
@@ -37,20 +37,20 @@ export const Sidebar = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={toggleSidebar}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/60 transition-colors lg:hidden"
-              aria-label="Toggle sidebar"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <button
-              onClick={toggleSidebar}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/60 transition-colors hidden lg:inline-flex"
-              aria-label="Collapse sidebar"
-            >
-              <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${!isSidebarOpen ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/60 transition-colors lg:hidden"
+            aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <button
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/60 transition-colors hidden lg:inline-flex"
+            aria-label="Collapse sidebar"
+          >
+            <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${!isSidebarOpen ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
         </div>
 
         {/* New Chat Button */}

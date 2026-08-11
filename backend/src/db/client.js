@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import env from '../config/env.js';
 
 let prismaInstance = null;
+let dbConnected = false;
 
 try {
   if (process.env.NODE_ENV === 'production') {
@@ -14,9 +15,19 @@ try {
     }
     prismaInstance = global.prisma;
   }
+
+  // Test connection
+  prismaInstance.$connect().then(() => {
+    dbConnected = true;
+    console.log('✅ Database connected successfully');
+  }).catch((err) => {
+    console.warn('⚠️ Database connection failed:', err.message.substring(0, 100));
+    console.warn('   Running in fallback mode - auth/data will use in-memory fallbacks');
+  });
 } catch (error) {
   console.warn('⚠️ Prisma Client initialization warning:', error.message);
   console.warn('💡 Set a valid Neon DATABASE_URL in .env to connect to your Postgres database.');
+  console.warn('   Running in fallback mode.');
 }
 
 // Robust fallback proxy to prevent backend crash if DB is not connected yet
@@ -38,4 +49,5 @@ const handler = {
 };
 
 export const prisma = new Proxy(prismaInstance || {}, handler);
+export const isDbConnected = () => dbConnected;
 export default prisma;

@@ -56,6 +56,15 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 MiniGPT API Server running on port ${PORT}`);
   console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
   console.log(`📁 Local Storage Directory: http://localhost:${PORT}/uploads`);
+  
+  // Log configuration status
+  console.log('\n📋 Configuration Status:');
+  console.log(`   Environment: ${env.NODE_ENV}`);
+  console.log(`   Client URL: ${env.CLIENT_URL || 'Not set'}`);
+  console.log(`   Database: ${env.DATABASE_URL ? 'Configured' : '⚠️ NOT SET'}`);
+  console.log(`   Gemini API: ${env.GEMINI_API_KEY ? (env.GEMINI_API_KEY.startsWith('AIzaSy') ? '✅ Valid format' : '⚠️ Invalid format (should start with AIzaSy)') : '⚠️ NOT SET'}`);
+  console.log(`   OpenAI API: ${env.OPENAI_API_KEY ? (env.OPENAI_API_KEY.startsWith('sk-') ? '✅ Valid format' : '⚠️ Invalid format (should start with sk-)') : '⚠️ NOT SET'}`);
+  console.log('');
 });
 
 server.on('error', (err) => {
