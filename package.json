@@ -14,6 +14,9 @@
     "db:push": "npm --prefix backend run db:push",
     "db:studio": "npm --prefix backend run db:studio"
   },
+  "prisma": {
+    "schema": "backend/prisma/schema.prisma"
+  },
   "devDependencies": {
     "concurrently": "^8.2.2"
   },

@@ -3,7 +3,7 @@ services:
     name: minigpt-backend
     env: node
     rootDir: backend
-    buildCommand: npm install && npx prisma generate
+    buildCommand: npm install && npx prisma generate --schema=prisma/schema.prisma
     startCommand: node src/index.js
     envVars:
       - key: NODE_ENV

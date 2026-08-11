@@ -98,7 +98,7 @@ const HomePage = () => {
       </header>
 
       {/* ===== MAIN CONTENT ===== */}
-      <main className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12 lg:py-20 space-y-24">
+              <main className="relative z-10 flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-20 space-y-16 sm:space-y-24">
 
         {/* ===== HERO SECTION ===== */}
         <section className="text-center space-y-8 max-w-4xl mx-auto">
@@ -185,12 +185,12 @@ const HomePage = () => {
             </div>
 
             {/* Pipeline Content */}
-            <div className="p-6 sm:p-8 rounded-xl bg-black/30 border border-white/5 min-h-[240px]">
+            <div className="p-6 sm:p-8 rounded-xl bg-black/30 border border-white/5 min-h-[180px] sm:min-h-[240px]">
               {/* Router View */}
               {activePipelineTab === 'router' && (
                 <div className="space-y-6 animate-fadeIn">
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 font-mono text-xs font-medium text-gray-300">
+                    <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 font-mono text-xs font-medium text-gray-300 break-words max-w-full">
                       User Prompt: "What is the weather in Delhi & summarize my notes?"
                     </div>
                     <div className="w-0.5 h-6 bg-gradient-to-b from-gray-500 to-gray-400" />
@@ -223,7 +223,7 @@ const HomePage = () => {
                     Used for direct answers, creative writing, advice, coding, and general knowledge.
                     Sends prompt straight to Google Gemini or OpenAI with streaming response tokens.
                   </p>
-                  <pre className="p-3 rounded-lg bg-black/50 font-mono text-xs text-gray-300 border border-white/5">
+                  <pre className="p-3 rounded-lg bg-black/50 font-mono text-xs text-gray-300 border border-white/5 overflow-x-auto whitespace-pre-wrap">
                     {'User Message ──> AI Router ──> Direct LLM ──> Streaming Response'}
                   </pre>
                 </div>
@@ -239,7 +239,7 @@ const HomePage = () => {
                     Used when asking about uploaded PDFs or notes. Extracts text, chunks with overlap,
                     embeds via 1536-dim vectors into Neon pgvector, and injects relevant chunks into prompt.
                   </p>
-                  <pre className="p-3 rounded-lg bg-black/50 font-mono text-xs text-gray-300 border border-white/5">
+                  <pre className="p-3 rounded-lg bg-black/50 font-mono text-xs text-gray-300 border border-white/5 overflow-x-auto whitespace-pre-wrap">
                     {'User Message ──> Embedding ──> pgvector Search ──> Context ──> Answer'}
                   </pre>
                 </div>
@@ -255,7 +255,7 @@ const HomePage = () => {
                     Triggers when real-time data is needed. Runs Weather API, Web Search, or Math Evaluator,
                     then passes structured tool output to the LLM for final synthesis.
                   </p>
-                  <pre className="p-3 rounded-lg bg-black/50 font-mono text-xs text-gray-300 border border-white/5">
+                  <pre className="p-3 rounded-lg bg-black/50 font-mono text-xs text-gray-300 border border-white/5 overflow-x-auto whitespace-pre-wrap">
                     {'User Message ──> Intent ──> Tool API ──> Result ──> Answer'}
                   </pre>
                 </div>
@@ -286,7 +286,7 @@ const HomePage = () => {
                   <feature.icon className="w-5 h-5 text-gray-300" />
                 </div>
                 <h3 className="text-lg font-bold text-white">{feature.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{feature.desc}</p>
+                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -323,14 +323,14 @@ const HomePage = () => {
               <img src="/logo.svg" alt="MiniGPT Logo" className="w-5 h-5" />
               <span className="text-sm font-medium text-gray-400">MiniGPT 2026</span>
             </div>
-            <div className="flex items-center gap-6 text-xs text-gray-500">
+            <div className="flex items-center gap-6 text-xs text-gray-500 break-words">
               <span>React 18 · Express · Neon PostgreSQL · AWS S3</span>
               <span className="hidden sm:inline">|</span>
               <span>Portfolio Showcase</span>
             </div>
             <div className="flex items-center gap-4">
               {[Github, Twitter, Linkedin, Mail].map((Icon, idx) => (
-                <a key={idx} href="#" className="text-gray-600 hover:text-gray-300 transition-colors">
+                <a key={idx} href="#" className="p-2 rounded-lg text-gray-600 hover:text-gray-300 transition-colors">
                   <Icon className="w-4 h-4" />
                 </a>
               ))}

@@ -38,14 +38,14 @@ export const Sidebar = () => {
           <div className="flex items-center gap-2">
             <button
             onClick={toggleSidebar}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/60 transition-colors lg:hidden"
+            className="p-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/60 transition-colors lg:hidden"
             aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
           >
             <Menu className="w-5 h-5" />
           </button>
           <button
             onClick={toggleSidebar}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/60 transition-colors hidden lg:inline-flex"
+            className="p-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-slate-800/60 transition-colors hidden lg:inline-flex"
             aria-label="Collapse sidebar"
           >
             <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${!isSidebarOpen ? 'rotate-180' : ''}`} />
@@ -67,8 +67,9 @@ export const Sidebar = () => {
       <div className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
         <NavLink
           to="/chat"
+          title="Chat"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
               isActive ? 'bg-slate-800/80 text-white border border-white/10' : 'text-gray-400 hover:text-gray-200 hover:bg-slate-900/50'
             }`
           }
@@ -79,8 +80,9 @@ export const Sidebar = () => {
 
         <NavLink
           to="/files"
+          title="Files & RAG"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
               isActive ? 'bg-slate-800/80 text-white border border-white/10' : 'text-gray-400 hover:text-gray-200 hover:bg-slate-900/50'
             }`
           }
@@ -91,8 +93,9 @@ export const Sidebar = () => {
 
         <NavLink
           to="/knowledge"
+          title="Memories"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
               isActive ? 'bg-slate-800/80 text-white border border-white/10' : 'text-gray-400 hover:text-gray-200 hover:bg-slate-900/50'
             }`
           }
@@ -103,8 +106,9 @@ export const Sidebar = () => {
 
         <NavLink
           to="/settings"
+          title="Settings"
           className={({ isActive }) =>
-            `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+            `flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
               isActive ? 'bg-slate-800/80 text-white border border-white/10' : 'text-gray-400 hover:text-gray-200 hover:bg-slate-900/50'
             }`
           }
@@ -156,7 +160,7 @@ export const Sidebar = () => {
           {isSidebarOpen && (
             <button
               onClick={handleLogout}
-              className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+              className="p-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />

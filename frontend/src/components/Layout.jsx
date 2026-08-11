@@ -8,7 +8,7 @@ export const Layout = () => {
   const { isSidebarOpen, toggleSidebar } = useUIStore();
 
   return (
-    <div className="flex min-h-screen w-full overflow-hidden bg-[#090d16]">
+    <div className="flex h-screen w-full overflow-hidden bg-[#090d16]">
       <Sidebar />
 
       <div
