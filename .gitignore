@@ -9,6 +9,8 @@ dist/
 build/
 .next/
 out/
+.vite/
+frontend/.vite/
 
 # Environment variables & Secrets
 .env
