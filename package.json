@@ -1,0 +1,31 @@
+{
+  "name": "minigpt-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MiniGPT - Production-quality AI Personal Assistant with Router Architecture",
+  "scripts": {
+    "dev": "concurrently -k -n \"BACKEND,FRONTEND\" -c \"blue.bold,magenta.bold\" \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "db:generate": "npm --prefix backend run db:generate",
+    "db:push": "npm --prefix backend run db:push",
+    "db:studio": "npm --prefix backend run db:studio"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": [
+    "ai",
+    "chatgpt",
+    "rag",
+    "vector-search",
+    "pgvector",
+    "router",
+    "llm",
+    "gemini",
+    "openai"
+  ],
+  "author": "",
+  "license": "MIT"
+}
