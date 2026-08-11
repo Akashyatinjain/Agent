@@ -1,32 +1,23 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import env from '../../config/env.js';
+import { generateSmartFallbackResponse } from './smartFallback.js';
 
 export const generateGeminiResponse = async ({ prompt, systemPrompt, history = [], onChunk = null }) => {
   const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
-  if (!apiKey) {
-    console.warn('⚠️ GEMINI_API_KEY is not set in backend/.env file. Running in Mock Mode.');
-    return sendMock(prompt, onChunk, 'Gemini');
+  // If no key or invalid key format, use smart fallback assistant
+  if (!apiKey || !apiKey.startsWith('AIzaSy')) {
+    console.warn('⚠️ GEMINI_API_KEY is missing or invalid format (should start with AIzaSy). Using Smart Assistant mode.');
+    return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'Gemini' });
   }
 
-  // Validate API key format
-  if (!apiKey.startsWith('AIzaSy')) {
-    console.error('❌ Invalid GEMINI_API_KEY format. Valid keys start with "AIzaSy..."');
-    console.error('   Get a free key from: https://aistudio.google.com/apikey');
-    const errMsg = `⚠️ **Invalid Gemini API Key Format**\n\nYour key starts with \`${apiKey.substring(0, 5)}...\` but valid Google AI Studio keys start with \`AIzaSy...\`\n\n**How to get a valid key:**\n1. Go to [Google AI Studio](https://aistudio.google.com/apikey)\n2. Click "Create API Key"\n3. Copy the key (starts with \`AIzaSy...\`)\n4. Paste it in \`backend/.env\` as \`GEMINI_API_KEY=AIzaSy...\`\n5. Restart the backend server`;
-    if (onChunk) onChunk(errMsg);
-    return errMsg;
-  }
-
-  // Current model names (2025-2026 era)
+  // Live model candidates
   const modelsToTry = [
-    'gemini-2.5-flash',
-    'gemini-2.0-flash-lite', 
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-pro-latest',
+    'gemini-1.5-flash',
+    'gemini-1.5-pro',
+    'gemini-2.0-flash',
+    'gemini-pro'
   ];
-
-  let lastError = null;
 
   for (const modelName of modelsToTry) {
     try {
@@ -53,23 +44,12 @@ export const generateGeminiResponse = async ({ prompt, systemPrompt, history = [
         return response.text();
       }
     } catch (error) {
-      console.warn(`⚠️ Model ${modelName} failed: ${error.message.substring(0, 100)}`);
-      lastError = error;
+      console.warn(`⚠️ Gemini model ${modelName} call failed: ${error.message.substring(0, 80)}`);
     }
   }
 
-  console.error('❌ All Gemini models failed:', lastError?.message);
-  const errReply = `⚠️ **Gemini API Error:** ${lastError?.message || 'All models unavailable'}\n\n**Possible fixes:**\n- Verify your API key at [Google AI Studio](https://aistudio.google.com/apikey)\n- Check your API quota hasn't been exceeded\n- Ensure the key is not restricted to certain APIs`;
-  if (onChunk) onChunk(errReply);
-  return errReply;
+  console.warn('⚠️ All live Gemini models failed. Using Smart Assistant mode.');
+  return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'Gemini (Live API Fallback)' });
 };
-
-function sendMock(prompt, onChunk, provider) {
-  const mockReply = `Hello! I am **MiniGPT** (${provider} Mock Mode).\n\nYour message: "*${prompt}*"\n\nTo get live responses, set a valid \`GEMINI_API_KEY\` in \`backend/.env\`.\nGet one free at: https://aistudio.google.com/apikey`;
-  if (onChunk) {
-    onChunk(mockReply);
-  }
-  return mockReply;
-}
 
 export default generateGeminiResponse;

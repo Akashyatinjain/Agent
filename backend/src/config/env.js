@@ -1,13 +1,48 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env from backend root directory
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-dotenv.config(); // fallback to process.cwd() .env
+// Search multiple locations for .env
+const possiblePaths = [
+  path.resolve(__dirname, '../../.env'),                          // backend/.env
+  path.resolve(__dirname, '../../../.env'),                       // root .env
+  path.resolve(process.cwd(), '.env'),                            // cwd/.env
+  path.resolve(process.cwd(), 'backend/.env'),                   // cwd/backend/.env
+];
+
+let envLoaded = false;
+for (const envPath of possiblePaths) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath });
+    console.log(`✅ Loaded .env from: ${envPath}`);
+    envLoaded = true;
+    break;
+  }
+}
+
+if (!envLoaded) {
+  console.warn('⚠️ No .env file found in any expected location');
+  console.warn('   Searched:', possiblePaths);
+}
+
+// Also try cwd as fallback
+dotenv.config();
+
+// Validate critical keys on startup
+const criticalKeys = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'DATABASE_URL'];
+for (const key of criticalKeys) {
+  if (process.env[key]) {
+    const val = process.env[key];
+    const masked = val.substring(0, 6) + '...' + val.substring(val.length - 4);
+    console.log(`   ${key}: ${masked}`);
+  } else {
+    console.warn(`   ⚠️ ${key}: NOT SET`);
+  }
+}
 
 export const env = {
   PORT: process.env.PORT || 5000,
