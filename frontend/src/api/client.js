@@ -2,8 +2,9 @@ import axios from 'axios';
 
 const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_URL;
-  if (!envUrl) return '/api';
-  const cleanUrl = envUrl.replace(/\/+$/, '');
+  // Live Render backend fallback if VITE_API_URL is omitted in Vercel settings
+  const target = envUrl || 'https://agent-iw4l.onrender.com';
+  const cleanUrl = target.replace(/\/+$/, '');
   return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
 };
 
