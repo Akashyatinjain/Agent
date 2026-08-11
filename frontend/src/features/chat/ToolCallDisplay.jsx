@@ -3,7 +3,13 @@ import { Wrench, Globe, Calculator, CloudSun } from 'lucide-react';
 
 export const ToolCallDisplay = ({ toolCalls }) => {
   if (!toolCalls) return null;
-  const tools = typeof toolCalls === 'string' ? JSON.parse(toolCalls) : toolCalls;
+  let tools;
+  try {
+    tools = typeof toolCalls === 'string' ? JSON.parse(toolCalls) : toolCalls;
+  } catch {
+    return null;
+  }
+  if (!Array.isArray(tools)) return null;
 
   const getToolIcon = (name) => {
     switch (name) {
@@ -23,11 +29,11 @@ export const ToolCallDisplay = ({ toolCalls }) => {
         <span>Tools Executed</span>
       </div>
       {tools.map((t, i) => (
-        <div key={i} className="flex items-center gap-2 p-1.5 rounded-lg bg-gray-950/60 text-gray-300">
+        <div key={i} className="flex items-center gap-2 p-1.5 rounded-lg bg-gray-950/60 text-gray-300 overflow-hidden">
           {getToolIcon(t.tool)}
-          <span className="font-mono font-medium text-gray-200">{t.tool}</span>
-          {t.location && <span className="text-gray-400">({t.location})</span>}
-          {t.result !== undefined && <span className="text-gray-200 font-bold">= {t.result}</span>}
+          <span className="font-mono font-medium text-gray-200 flex-shrink-0">{t.tool}</span>
+          {t.location && <span className="text-gray-400 flex-shrink-0">({t.location})</span>}
+          {t.result !== undefined && <span className="text-gray-200 font-bold truncate">= {t.result}</span>}
         </div>
       ))}
     </div>

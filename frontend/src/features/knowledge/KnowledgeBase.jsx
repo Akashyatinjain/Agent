@@ -51,14 +51,14 @@ export const KnowledgeBase = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {memories.map((mem) => (
             <div key={mem.id} className="glass-panel p-4 rounded-2xl border border-gray-800 space-y-2 flex flex-col justify-between">
-              <p className="text-sm text-gray-200 font-medium leading-relaxed">"{mem.fact}"</p>
+              <p className="text-sm text-gray-200 font-medium leading-relaxed break-words">"{mem.fact}"</p>
               <div className="flex items-center justify-between pt-2 border-t border-gray-800/80">
-                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gray-200 bg-white/5 px-2 py-0.5 rounded-full">
+                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gray-200 bg-white/5 px-2 py-0.5 rounded-full truncate max-w-[140px]">
                   <Tag className="w-3 h-3 text-gray-300" /> {mem.category}
                 </span>
                 <button
                   onClick={() => handleDelete(mem.id)}
-                  className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                  className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

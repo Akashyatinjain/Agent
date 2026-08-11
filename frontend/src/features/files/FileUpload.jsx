@@ -28,13 +28,13 @@ export const FileUpload = ({ onUploadSuccess }) => {
   };
 
   return (
-    <div className="glass-panel p-6 rounded-2xl border border-gray-800 space-y-4">
+    <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-gray-800 space-y-4">
       <div className="flex items-center gap-2 text-gray-200 font-semibold text-sm">
         <UploadCloud className="w-5 h-5 text-gray-300" />
         <span>Upload Document to AWS S3 + pgvector RAG Index</span>
       </div>
 
-      <div className="border-2 border-dashed border-gray-700 hover:border-white/20 rounded-xl p-8 text-center transition-colors relative cursor-pointer group">
+      <div className="border-2 border-dashed border-gray-700 hover:border-white/20 rounded-xl p-6 sm:p-8 text-center transition-colors relative cursor-pointer group">
         <input
           type="file"
           accept=".pdf,.txt,.md,.docx,.csv,.json"
@@ -45,7 +45,12 @@ export const FileUpload = ({ onUploadSuccess }) => {
         <div className="flex flex-col items-center gap-2">
           <FileText className="w-10 h-10 text-gray-400 group-hover:text-gray-200 transition-colors" />
           <p className="text-sm font-medium text-gray-200">
-            {uploading ? 'Uploading to S3...' : 'Click or drag & drop documents here'}
+            {uploading ? 'Uploading to S3...' : (
+              <>
+                <span className="hidden sm:inline">Click or drag & drop documents here</span>
+                <span className="sm:hidden">Tap to select documents</span>
+              </>
+            )}
           </p>
           <span className="text-xs text-gray-500">Supports PDF, TXT, MD, DOCX, CSV, JSON (Up to 10MB)</span>
         </div>
@@ -56,7 +61,7 @@ export const FileUpload = ({ onUploadSuccess }) => {
           status.type === 'success' ? 'bg-white/5 text-gray-200 border border-white/10' : 'bg-white/5 text-gray-200 border border-white/10'
         }`}>
           {status.type === 'success' ? <CheckCircle className="w-4 h-4 flex-shrink-0 text-gray-300" /> : <AlertCircle className="w-4 h-4 flex-shrink-0 text-gray-300" />}
-          <span>{status.message}</span>
+          <span className="break-words">{status.message}</span>
         </div>
       )}
     </div>

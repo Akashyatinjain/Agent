@@ -84,7 +84,7 @@ export const ChatWindow = () => {
               <Sparkles className="w-8 h-8 text-gray-200" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-white tracking-tight">MiniGPT AI Assistant</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">MiniGPT AI Assistant</h2>
               <p className="text-sm text-gray-400">
                 Your daily life problem-solving agent with an intelligent <span className="text-gray-200 font-semibold">Router Architecture</span>.
               </p>

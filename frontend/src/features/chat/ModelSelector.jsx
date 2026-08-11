@@ -9,7 +9,7 @@ export const ModelSelector = () => {
     <div className="flex items-center gap-1.5 p-1 rounded-xl bg-gray-900/80 border border-gray-800">
       <button
         onClick={() => setSelectedModel('gemini')}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
           selectedModel === 'gemini'
             ? 'bg-white text-black shadow-md shadow-slate-900/20'
             : 'text-gray-400 hover:text-gray-200'
@@ -21,7 +21,7 @@ export const ModelSelector = () => {
 
       <button
         onClick={() => setSelectedModel('openai')}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
           selectedModel === 'openai'
             ? 'bg-white text-black shadow-md shadow-slate-900/20'
             : 'text-gray-400 hover:text-gray-200'

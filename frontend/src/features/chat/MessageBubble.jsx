@@ -38,7 +38,7 @@ export const MessageBubble = ({ message }) => {
         ? 'ml-auto bg-slate-900/90 border border-white/10 text-gray-100'
         : 'mr-auto glass-panel border border-white/10 text-gray-100'
     }`}>
-      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+      <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
         isUser
           ? 'bg-slate-700 text-white'
           : 'bg-slate-800 text-white shadow-md shadow-slate-900/20'
@@ -54,7 +54,7 @@ export const MessageBubble = ({ message }) => {
           </div>
           <button
             onClick={handleCopy}
-            className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors"
+            className="p-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800/50 transition-colors"
             title="Copy message"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-gray-200" /> : <Copy className="w-3.5 h-3.5" />}

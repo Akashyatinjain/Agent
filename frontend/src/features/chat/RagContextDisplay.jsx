@@ -5,7 +5,12 @@ export const RagContextDisplay = ({ ragContext }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   if (!ragContext) return null;
-  const chunks = typeof ragContext === 'string' ? JSON.parse(ragContext) : ragContext;
+  let chunks;
+  try {
+    chunks = typeof ragContext === 'string' ? JSON.parse(ragContext) : ragContext;
+  } catch {
+    return null;
+  }
   if (!chunks || chunks.length === 0) return null;
 
   return (
@@ -32,7 +37,7 @@ export const RagContextDisplay = ({ ragContext }) => {
                 </span>
                 <span className="text-gray-300 font-bold">{(chunk.similarity * 100).toFixed(0)}% match</span>
               </div>
-              <p className="text-gray-300 text-[11px] leading-relaxed line-clamp-3">{chunk.content}</p>
+              <p className="text-gray-300 text-[11px] leading-relaxed line-clamp-3 break-words">{chunk.content}</p>
             </div>
           ))}
         </div>

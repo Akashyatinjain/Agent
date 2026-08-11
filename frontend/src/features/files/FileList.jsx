@@ -44,11 +44,11 @@ export const FileList = ({ files = [], onDeleteSuccess }) => {
   }
 
   return (
-    <div className="glass-panel p-6 rounded-2xl border border-gray-800 space-y-4">
+    <div className="glass-panel p-4 sm:p-6 rounded-2xl border border-gray-800 space-y-4">
       <h3 className="text-sm font-semibold text-gray-200">Uploaded RAG Knowledge Files ({files.length})</h3>
       <div className="divide-y divide-gray-800">
         {files.map((file) => (
-          <div key={file.id} className="flex items-center justify-between py-3">
+          <div key={file.id} className="flex items-center justify-between py-3 gap-3 overflow-hidden">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-300">
                 <FileText className="w-4 h-4" />
@@ -63,7 +63,7 @@ export const FileList = ({ files = [], onDeleteSuccess }) => {
               {getStatusBadge(file.status)}
               <button
                 onClick={() => handleDelete(file.id)}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-2.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
               >
                 <Trash2 className="w-4 h-4" />
               </button>

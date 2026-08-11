@@ -184,7 +184,7 @@ export const RegisterPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-300 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -214,7 +214,7 @@ export const RegisterPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-300 transition-colors"
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -254,7 +254,7 @@ export const RegisterPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 rounded-lg bg-white text-black font-semibold text-sm hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed mt-2 cursor-pointer"
+              className="w-full py-3 rounded-lg bg-white text-black font-semibold text-sm hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed mt-2 cursor-pointer"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export const RegisterPage = () => {
               <button
                 key={provider.label}
                 type="button"
-                className="py-2 rounded-lg border border-white/5 bg-white/5 text-gray-400 text-xs font-medium hover:bg-white/10 hover:text-white transition-all duration-200 flex items-center justify-center gap-1.5"
+                className="py-2.5 rounded-lg border border-white/5 bg-white/5 text-gray-400 text-xs font-medium hover:bg-white/10 hover:text-white transition-all duration-200 flex items-center justify-center gap-1.5"
               >
                 <provider.icon className="w-3.5 h-3.5" />
                 {provider.label}

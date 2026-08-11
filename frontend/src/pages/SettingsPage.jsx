@@ -3,7 +3,7 @@ import SettingsPanel from '../features/settings/SettingsPanel';
 
 export const SettingsPage = () => {
   return (
-    <div className="p-6 w-full">
+    <div className="p-4 sm:p-6 w-full">
       <SettingsPanel />
     </div>
   );

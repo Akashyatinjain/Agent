@@ -24,17 +24,17 @@ export const SettingsPanel = () => {
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-gray-900/80 border border-white/10 flex items-center justify-between">
-              <div>
-                <span className="text-sm font-semibold text-white">Google Gemini API</span>
+            <div className="p-4 rounded-xl bg-gray-900/80 border border-white/10 flex items-center justify-between gap-3 min-w-0">
+              <div className="min-w-0">
+                <span className="text-sm font-semibold text-white truncate block">Google Gemini API</span>
                 <p className="text-xs text-gray-400">gemini-1.5-flash</p>
               </div>
               <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 text-gray-200 border border-white/10">Active</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-gray-900/80 border border-white/10 flex items-center justify-between">
-              <div>
-                <span className="text-sm font-semibold text-white">OpenAI API</span>
+            <div className="p-4 rounded-xl bg-gray-900/80 border border-white/10 flex items-center justify-between gap-3 min-w-0">
+              <div className="min-w-0">
+                <span className="text-sm font-semibold text-white truncate block">OpenAI API</span>
                 <p className="text-xs text-gray-400">gpt-4o-mini</p>
               </div>
               <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 text-gray-200 border border-white/10">Active</span>
@@ -48,19 +48,19 @@ export const SettingsPanel = () => {
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 flex items-center gap-3">
-              <Database className="w-8 h-8 text-gray-300" />
-              <div>
-                <span className="text-sm font-semibold text-white">Neon PostgreSQL</span>
-                <p className="text-xs text-gray-400">Serverless DB + pgvector vector embeddings</p>
+            <div className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 flex items-center gap-3 min-w-0">
+              <Database className="w-8 h-8 text-gray-300 flex-shrink-0" />
+              <div className="min-w-0">
+                <span className="text-sm font-semibold text-white truncate block">Neon PostgreSQL</span>
+                <p className="text-xs text-gray-400 truncate">Serverless DB + pgvector vector embeddings</p>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 flex items-center gap-3">
-              <Cloud className="w-8 h-8 text-gray-300" />
-              <div>
-                <span className="text-sm font-semibold text-white">AWS S3 Bucket</span>
-                <p className="text-xs text-gray-400">Document storage pipeline for RAG</p>
+            <div className="p-4 rounded-xl bg-gray-900/80 border border-gray-800 flex items-center gap-3 min-w-0">
+              <Cloud className="w-8 h-8 text-gray-300 flex-shrink-0" />
+              <div className="min-w-0">
+                <span className="text-sm font-semibold text-white truncate block">AWS S3 Bucket</span>
+                <p className="text-xs text-gray-400 truncate">Document storage pipeline for RAG</p>
               </div>
             </div>
           </div>

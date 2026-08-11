@@ -23,7 +23,7 @@ export const ChatInput = ({ onSend, disabled }) => {
 
   const getRouterBadge = () => {
     if (!activeRouterIntent) return null;
-    const baseBadge = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 text-gray-200 border border-white/10 text-xs font-semibold';
+    const baseBadge = 'flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/5 text-gray-200 border border-white/10 text-xs font-semibold max-w-full overflow-hidden';
     const pulse = activeRouterIntent.routerType ? 'animate-pulse' : '';
     const label = {
       rag: 'AI Router: Querying pgvector RAG Index',
@@ -35,7 +35,7 @@ export const ChatInput = ({ onSend, disabled }) => {
     return (
       <div className={`${baseBadge} ${pulse}`}>
         <Sparkles className="w-3.5 h-3.5 text-gray-300" />
-        <span>{label}</span>
+        <span className="truncate">{label}</span>
       </div>
     );
   };
@@ -56,14 +56,14 @@ export const ChatInput = ({ onSend, disabled }) => {
         />
 
         <div className="flex items-center justify-between pt-2 border-t border-white/10 px-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0 overflow-x-auto">
             <ModelSelector />
           </div>
 
           <button
             type="submit"
             disabled={!input.trim() || disabled}
-            className="p-2.5 rounded-xl bg-white text-black disabled:opacity-40 transition-all shadow-md shadow-slate-900/20"
+            className="p-3 rounded-xl bg-white text-black disabled:opacity-40 transition-all shadow-md shadow-slate-900/20 flex-shrink-0"
           >
             <Send className="w-4 h-4" />
           </button>
