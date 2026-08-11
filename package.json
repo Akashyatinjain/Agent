@@ -2,35 +2,36 @@
   "name": "minigpt-app",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "MiniGPT - Production-quality AI Personal Assistant with Router Architecture",
   "scripts": {
     "dev": "concurrently -k -n \"BACKEND,FRONTEND\" -c \"blue.bold,magenta.bold\" \"npm --prefix backend run dev\" \"npm --prefix frontend run dev\"",
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
-    "build": "npm --prefix backend install && npm --prefix backend run build",
-    "start": "npm --prefix backend start",
-    "build:frontend": "npm --prefix frontend run build",
-    "db:generate": "npm --prefix backend run db:generate",
-    "db:push": "npm --prefix backend run db:push",
-    "db:studio": "npm --prefix backend run db:studio"
+    "build": "cd backend && npm install && npx prisma@5.16.0 generate --schema=prisma/schema.prisma",
+    "start": "cd backend && node src/index.js",
+    "build:frontend": "cd frontend && npm install && npm run build",
+    "db:generate": "cd backend && npx prisma@5.16.0 generate --schema=prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/s3-request-presigner": "^3.600.0",
+    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^5.16.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.52.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prisma": "^5.16.0"
   },
   "prisma": {
     "schema": "backend/prisma/schema.prisma"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  },
-  "keywords": [
-    "ai",
-    "chatgpt",
-    "rag",
-    "vector-search",
-    "pgvector",
-    "router",
-    "llm",
-    "gemini",
-    "openai"
-  ],
-  "author": "",
-  "license": "MIT"
+  }
 }
