@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Sparkles, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
 import { loginApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 
@@ -59,9 +59,7 @@ export const LoginPage = () => {
         {/* Brand Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2.5 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center shadow-lg shadow-white/5 ring-1 ring-white/10">
-              <Sparkles className="w-5 h-5 text-black" />
-            </div>
+            <img src="/logo.svg" alt="MiniGPT Logo" className="w-10 h-10" />
             <span className="font-bold text-xl tracking-tight text-white">MiniGPT</span>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Welcome Back</h1>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { MessageSquare, Folder, Brain, Settings, LogOut, Plus, Sparkles, ChevronLeft, Menu } from 'lucide-react';
+import { MessageSquare, Folder, Brain, Settings, LogOut, Plus, ChevronLeft, Menu } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useChatStore from '../../store/chatStore';
 import useUIStore from '../../store/uiStore';
@@ -32,9 +32,7 @@ export const Sidebar = () => {
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-slate-700 flex items-center justify-center text-white shadow-lg shadow-slate-900/20">
-              <Sparkles className="w-4 h-4" />
-            </div>
+            <img src="/logo.svg" alt="MiniGPT Logo" className="w-8 h-8" />
             {isSidebarOpen && <span className="font-bold text-lg text-white tracking-tight">MiniGPT</span>}
           </div>
           <div className="flex items-center gap-2">

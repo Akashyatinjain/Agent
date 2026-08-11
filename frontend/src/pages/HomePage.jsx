@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  Sparkles, ArrowRight, Brain, Database, Wrench, Shield,
+  ArrowRight, Brain, Database, Wrench, Shield,
   CheckCircle2, Zap, Terminal, Layers, PlayCircle, Cpu,
   Menu, X, Github, Twitter, Linkedin, Mail
 } from 'lucide-react';
@@ -25,9 +25,7 @@ const HomePage = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center shadow-lg shadow-white/5 ring-1 ring-white/10 group-hover:ring-white/30 transition-all">
-                <Sparkles className="w-5 h-5 text-black" />
-              </div>
+              <img src="/logo.svg" alt="MiniGPT Logo" className="w-9 h-9" />
               <span className="font-bold text-xl tracking-tight text-white">MiniGPT</span>
             </Link>
 
@@ -322,7 +320,7 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-gray-500" />
+              <img src="/logo.svg" alt="MiniGPT Logo" className="w-5 h-5" />
               <span className="text-sm font-medium text-gray-400">MiniGPT 2026</span>
             </div>
             <div className="flex items-center gap-6 text-xs text-gray-500">
