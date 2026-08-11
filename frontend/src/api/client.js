@@ -2,10 +2,18 @@ import axios from 'axios';
 
 const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_URL;
-  // Live Render backend fallback if VITE_API_URL is omitted in Vercel settings
-  const target = envUrl || 'https://agent-iw4l.onrender.com';
-  const cleanUrl = target.replace(/\/+$/, '');
-  return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+  if (envUrl) {
+    const cleanUrl = envUrl.replace(/\/+$/, '');
+    return cleanUrl.endsWith('/api') ? cleanUrl : `${cleanUrl}/api`;
+  }
+
+  // Automatically detect environment
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return '/api'; // Connects to http://localhost:5000 via Vite proxy
+  }
+
+  // Production fallback on Vercel
+  return 'https://agent-iw4l.onrender.com/api';
 };
 
 const api = axios.create({
