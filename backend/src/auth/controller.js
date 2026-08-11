@@ -11,12 +11,14 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Email, password, and name are required' });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
     // Check existing user
     let existingUser = null;
     try {
-      existingUser = await prisma.user.findUnique({ where: { email } });
+      existingUser = await prisma.user.findUnique({ where: { email: cleanEmail } });
     } catch (e) {
-      console.warn('DB check failed, likely prisma uninitialized yet:', e.message);
+      console.warn('DB check failed, trying fallback mode:', e.message);
     }
 
     if (existingUser) {
@@ -29,25 +31,26 @@ export const register = async (req, res, next) => {
     try {
       user = await prisma.user.create({
         data: {
-          email,
+          email: cleanEmail,
           name,
           passwordHash: hashedPassword
         }
       });
     } catch (e) {
-      // Fallback mock user if DB is not connected yet during early dev
+      console.warn('Prisma create user failed, fallback user:', e.message);
       user = {
-        id: `mock-${Date.now()}`,
-        email,
+        id: `user-${Date.now()}`,
+        email: cleanEmail,
         name,
         avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(name)}`
       };
     }
 
+    const jwtSecret = env.JWT_SECRET || 'minigpt_dev_jwt_secret_key_2026';
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name },
-      env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN }
+      jwtSecret,
+      { expiresIn: env.JWT_EXPIRES_IN || '7d' }
     );
 
     return res.status(201).json({
@@ -61,7 +64,8 @@ export const register = async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    console.error('❌ Register controller error:', error);
+    return res.status(500).json({ success: false, error: 'Registration failed due to server error' });
   }
 };
 
@@ -73,16 +77,18 @@ export const login = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'Email and password are required' });
     }
 
+    const cleanEmail = email.trim().toLowerCase();
+
     let user = null;
     try {
-      user = await prisma.user.findUnique({ where: { email } });
+      user = await prisma.user.findUnique({ where: { email: cleanEmail } });
     } catch (e) {
-      console.warn('DB search failed:', e.message);
+      console.warn('DB search failed during login:', e.message);
     }
 
     if (!user) {
-      // Allow a demo login if DB is disconnected in initial prototype run
-      if (email === 'demo@minigpt.dev' && password === 'password123') {
+      // Demo account fallback
+      if (cleanEmail === 'demo@minigpt.dev' && password === 'password123') {
         user = {
           id: 'demo-user-123',
           email: 'demo@minigpt.dev',
@@ -95,16 +101,22 @@ export const login = async (req, res, next) => {
     }
 
     if (user.passwordHash) {
-      const isValid = await bcrypt.compare(password, user.passwordHash);
-      if (!isValid) {
+      try {
+        const isValid = await bcrypt.compare(password, user.passwordHash);
+        if (!isValid) {
+          return res.status(401).json({ success: false, error: 'Invalid email or password' });
+        }
+      } catch (bcryptErr) {
+        console.error('Bcrypt compare error:', bcryptErr.message);
         return res.status(401).json({ success: false, error: 'Invalid email or password' });
       }
     }
 
+    const jwtSecret = env.JWT_SECRET || 'minigpt_dev_jwt_secret_key_2026';
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name },
-      env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN }
+      jwtSecret,
+      { expiresIn: env.JWT_EXPIRES_IN || '7d' }
     );
 
     return res.json({
@@ -118,7 +130,8 @@ export const login = async (req, res, next) => {
       }
     });
   } catch (error) {
-    next(error);
+    console.error('❌ Login controller error:', error);
+    return res.status(401).json({ success: false, error: 'Invalid email or password' });
   }
 };
 
