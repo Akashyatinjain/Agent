@@ -93,27 +93,28 @@ export const ChatWindow = () => {
 
   return (
     <div
-      className="flex flex-col h-full w-full relative theme-transition"
+      className="flex flex-col h-full w-full relative theme-transition min-h-0"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-4 sm:space-y-6 max-w-xl mx-auto py-6 sm:py-12 px-2 animate-fade-in">
+          <div className="flex flex-col items-center justify-center min-h-full text-center space-y-3 sm:space-y-6 max-w-xl mx-auto py-2 sm:py-8 px-1 animate-fade-in my-auto">
             <div
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center animate-float shrink-0"
+              className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center animate-float shrink-0"
               style={{
-                backgroundColor: 'var(--bg-accent)',
-                color: 'var(--text-on-accent)',
-                boxShadow: 'var(--shadow-lg)'
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border-primary)',
+                boxShadow: 'var(--shadow-md)'
               }}
             >
-              <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
+              <Sparkles className="w-5 h-5 sm:w-7 sm:h-7" />
             </div>
 
-            <div className="space-y-1.5 sm:space-y-2">
+            <div className="space-y-1 sm:space-y-2">
               <h2
-                className="text-lg sm:text-2xl font-semibold tracking-tight"
+                className="text-base sm:text-2xl font-bold tracking-tight"
                 style={{ color: 'var(--text-primary)' }}
               >
                 MiniGPT AI Assistant
@@ -126,18 +127,18 @@ export const ChatWindow = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 w-full pt-1 sm:pt-2">
               {featureCards.map((card, i) => (
                 <div
                   key={card.title}
-                  className={`p-3 sm:p-3.5 rounded-xl text-left space-y-1 sm:space-y-1.5 transition-all duration-200 animate-fade-in-up stagger-${i + 1}`}
+                  className={`p-2.5 sm:p-3.5 rounded-xl text-left space-y-1 sm:space-y-1.5 transition-all duration-200 animate-fade-in-up stagger-${i + 1}`}
                   style={{
                     backgroundColor: 'var(--bg-secondary)',
                     border: '1px solid var(--border-primary)',
                   }}
                 >
                   <div className="flex items-center gap-2">
-                    <card.icon className="w-4 h-4 shrink-0" style={{ color: 'var(--text-secondary)' }} />
+                    <card.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" style={{ color: 'var(--text-secondary)' }} />
                     <span
                       className="font-semibold text-xs"
                       style={{ color: 'var(--text-primary)' }}
@@ -168,7 +169,7 @@ export const ChatWindow = () => {
 
       {/* Input */}
       <div
-        className="p-2.5 sm:p-4 md:p-6 theme-transition shrink-0"
+        className="p-2 sm:p-4 md:p-6 theme-transition shrink-0"
         style={{
           borderTop: '1px solid var(--border-primary)',
           backgroundColor: 'var(--bg-primary)',
