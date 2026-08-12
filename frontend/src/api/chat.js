@@ -1,4 +1,4 @@
-import api from './client';
+import api, { getBaseURL } from './client';
 
 export const fetchConversationsApi = async () => {
   const res = await api.get('/chat/conversations');
@@ -17,8 +17,10 @@ export const deleteConversationApi = async (id) => {
 
 export const sendMessageStreamApi = async ({ message, conversationId, model }, onEvent) => {
   const token = localStorage.getItem('minigpt_token');
+  const baseUrl = getBaseURL();
+  const endpoint = `${baseUrl}/chat/message`;
 
-  const response = await fetch('/api/chat/message', {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -28,7 +30,7 @@ export const sendMessageStreamApi = async ({ message, conversationId, model }, o
   });
 
   if (!response.ok) {
-    throw new Error('Failed to send message');
+    throw new Error(`Failed to send message (${response.status})`);
   }
 
   const reader = response.body.getReader();

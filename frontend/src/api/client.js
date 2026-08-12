@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const getBaseURL = () => {
+export const getBaseURL = () => {
   const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl) {
     const cleanUrl = envUrl.replace(/\/+$/, '');
@@ -12,7 +12,7 @@ const getBaseURL = () => {
     return '/api'; // Connects to http://localhost:5000 via Vite proxy
   }
 
-  // Production fallback on Vercel
+  // Production fallback on Vercel / Netlify / Render static hosting
   return 'https://agent-iw4l.onrender.com/api';
 };
 
