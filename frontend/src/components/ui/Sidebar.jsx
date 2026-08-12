@@ -41,10 +41,10 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col justify-between transition-all duration-300 theme-transition ${
+      className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto flex flex-col justify-between shrink-0 transition-all duration-300 theme-transition ${
         isSidebarOpen
-          ? 'w-72 sm:w-64 translate-x-0'
-          : '-translate-x-full lg:w-16 lg:translate-x-0'
+          ? 'w-72 lg:w-64 translate-x-0'
+          : '-translate-x-full lg:translate-x-0 lg:w-16'
       }`}
       style={{
         backgroundColor: 'var(--bg-sidebar)',
@@ -108,7 +108,7 @@ export const Sidebar = () => {
             boxShadow: 'var(--shadow-sm)'
           }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 flex-shrink-0" />
           {isSidebarOpen && <span>New Chat</span>}
         </button>
       </div>

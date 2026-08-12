@@ -10,32 +10,31 @@ export const Layout = () => {
 
   return (
     <div
-      className="flex h-[100dvh] w-full overflow-hidden theme-transition"
+      className="flex h-[100dvh] w-full overflow-hidden theme-transition relative"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
       <Sidebar />
 
       {/* Mobile overlay */}
-      <div
-        className={`fixed inset-0 z-40 transition-opacity lg:hidden ${
-          isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
-        style={{ backgroundColor: 'var(--overlay)' }}
-        onClick={toggleSidebar}
-        aria-hidden={!isSidebarOpen}
-      />
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity duration-300"
+          onClick={toggleSidebar}
+          aria-label="Close menu backdrop"
+        />
+      )}
 
       {/* Main Content Column */}
       <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
         {/* Mobile Top Navigation Header */}
         <header
-          className="flex lg:hidden items-center justify-between px-4 py-3 shrink-0 z-30 theme-transition"
+          className="flex lg:hidden items-center justify-between px-4 py-2.5 shrink-0 z-30 theme-transition"
           style={{
             backgroundColor: 'var(--bg-sidebar)',
             borderBottom: '1px solid var(--border-primary)',
           }}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={toggleSidebar}
               className="p-2 rounded-xl transition-colors"
