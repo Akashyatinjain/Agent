@@ -11,12 +11,14 @@ export const ROUTER_TYPES = {
 
 export const MODEL_PROVIDERS = {
   GEMINI: 'gemini',
-  OPENAI: 'openai'
+  OPENAI: 'openai',
+  MISTRAL: 'mistral'
 };
 
 export const DEFAULT_MODELS = {
-  GEMINI: 'gemini-1.5-flash',
-  OPENAI: 'gpt-4o-mini'
+  GEMINI: 'gemini-3.6-flash',
+  OPENAI: 'gpt-4o-mini',
+  MISTRAL: 'mistral-small-latest'
 };
 
 export const TOOL_NAMES = {

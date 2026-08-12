@@ -33,11 +33,11 @@ if (!envLoaded) {
 dotenv.config();
 
 // Validate critical keys on startup
-const criticalKeys = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'DATABASE_URL'];
+const criticalKeys = ['GEMINI_API_KEY', 'OPENAI_API_KEY', 'MISTRAL_API_KEY', 'DATABASE_URL'];
 for (const key of criticalKeys) {
   if (process.env[key]) {
     const val = process.env[key];
-    const masked = val.substring(0, 6) + '...' + val.substring(val.length - 4);
+    const masked = val.length > 10 ? val.substring(0, 6) + '...' + val.substring(val.length - 4) : '******';
     console.log(`   ${key}: ${masked}`);
   } else {
     console.warn(`   ⚠️ ${key}: NOT SET`);
@@ -54,6 +54,7 @@ export const env = {
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+  MISTRAL_API_KEY: process.env.MISTRAL_API_KEY || '',
   AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || '',
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || '',
   AWS_REGION: process.env.AWS_REGION || 'us-east-1',

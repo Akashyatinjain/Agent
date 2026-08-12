@@ -23,9 +23,9 @@ export const generateEmbedding = async (text) => {
     }
   }
 
-  // Try Gemini embeddings (only if key is valid format)
-  if (geminiKey && geminiKey.startsWith('AIzaSy')) {
-    const embeddingModels = ['text-embedding-005', 'text-embedding-004', 'embedding-001'];
+  // Try Gemini embeddings
+  if (geminiKey && geminiKey.trim() !== '') {
+    const embeddingModels = ['gemini-embedding-001', 'gemini-embedding-2', 'gemini-embedding-2-preview', 'text-embedding-004'];
     for (const modelName of embeddingModels) {
       try {
         const genAI = new GoogleGenerativeAI(geminiKey);

@@ -11,7 +11,7 @@ export const ChatPage = () => {
       .then((res) => {
         if (res.success) setConversations(res.conversations);
       })
-      .catch((e) => {});
+      .catch((e) => { });
   }, [setConversations]);
 
   return <ChatWindow />;
