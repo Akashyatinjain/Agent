@@ -18,7 +18,7 @@ export const FilesPage = () => {
   }, []);
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-4xl mx-auto w-full">
+    <div className="h-full overflow-y-auto p-4 sm:p-6 space-y-6 max-w-4xl mx-auto w-full">
       <div className="space-y-1 animate-fade-in">
         <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
           AWS S3 File Storage & RAG Engine

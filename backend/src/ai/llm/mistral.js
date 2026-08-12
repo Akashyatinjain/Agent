@@ -11,10 +11,9 @@ export const generateMistralResponse = async ({ prompt, systemPrompt, history = 
 
   const modelsToTry = [
     'mistral-small-latest',
-    'open-mistral-7b',
-    'mistral-tiny',
     'mistral-medium-latest',
-    'mistral-large-latest'
+    'mistral-large-latest',
+    'open-mistral-7b'
   ];
 
   const messages = [];
@@ -81,10 +80,17 @@ export const generateMistralResponse = async ({ prompt, systemPrompt, history = 
             }
           }
         }
-        return completeText;
+
+        if (completeText && completeText.trim().length > 0) {
+          return completeText;
+        }
       } else {
         const data = await response.json();
-        return data.choices?.[0]?.message?.content || '';
+        const content = data.choices?.[0]?.message?.content || '';
+        if (content && content.trim().length > 0) {
+          if (onChunk) onChunk(content);
+          return content;
+        }
       }
     } catch (error) {
       console.warn(`⚠️ Mistral model ${modelName} request failed: ${error.message}`);

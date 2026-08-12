@@ -64,7 +64,7 @@ export const Layout = () => {
         </header>
 
         {/* Dynamic Route View */}
-        <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-y-auto">
+        <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
           <Outlet />
         </main>
       </div>
