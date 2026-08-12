@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { registerApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -30,7 +31,6 @@ export const RegisterPage = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    // Clear error for this field
     if (errors[name] || errors.submit) {
       setErrors(prev => ({ ...prev, [name]: '', submit: '' }));
     }
@@ -38,27 +38,13 @@ export const RegisterPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    }
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
-    }
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    if (!formData.agreeTerms) {
-      newErrors.agreeTerms = 'You must agree to the terms';
-    }
-
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Please enter a valid email';
+    if (!formData.password) newErrors.password = 'Password is required';
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -84,49 +70,81 @@ export const RegisterPage = () => {
     }
   };
 
+  const inputStyle = (hasError) => ({
+    backgroundColor: 'var(--bg-input)',
+    border: `1px solid ${hasError ? 'rgba(239,68,68,0.5)' : 'var(--border-primary)'}`,
+    color: 'var(--text-primary)',
+  });
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-gray-600 selection:text-white">
-
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden theme-transition"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
+    >
       {/* Background Orbs */}
-      <div className="absolute -top-40 -right-40 w-72 h-72 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 left-10 w-72 h-72 sm:w-96 sm:h-96 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 sm:w-[600px] sm:h-[600px] bg-white/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none animate-orb-1" style={{ backgroundColor: 'var(--orb-color)' }} />
+      <div className="absolute bottom-10 left-10 w-[400px] h-[400px] rounded-full blur-3xl pointer-events-none animate-orb-2" style={{ backgroundColor: 'var(--orb-color)' }} />
 
-      {/* Back to Home Link */}
-      <div className="absolute top-6 left-6 z-20">
+      {/* Top Bar */}
+      <div className="absolute top-4 left-4 right-4 sm:top-6 sm:left-6 sm:right-6 z-20 flex items-center justify-between">
         <Link
           to="/"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 text-xs font-medium text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200"
+          style={{
+            backgroundColor: 'var(--bg-secondary)',
+            border: '1px solid var(--border-primary)',
+            color: 'var(--text-tertiary)'
+          }}
         >
           <ChevronLeft className="w-4 h-4" /> Back to Home
         </Link>
+        <ThemeToggle />
       </div>
 
-      {/* ===== REGISTER CARD ===== */}
-      <div className="relative z-10 w-full max-w-md">
-        {/* Brand Header */}
-        <div className="text-center mb-6">
-          <div className="flex items-center justify-center gap-2.5 mb-4">
-            <img src="/logo.svg" alt="MiniGPT Logo" className="w-10 h-10" />
-            <span className="font-bold text-xl tracking-tight text-white">MiniGPT</span>
+      {/* Register Card */}
+      <div className="relative z-10 w-full max-w-md animate-fade-in-up my-auto">
+        {/* Brand */}
+        <div className="text-center mb-4 sm:mb-6 mt-12 sm:mt-0">
+          <div className="flex items-center justify-center gap-2.5 mb-2 sm:mb-4">
+            <div
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-lg"
+              style={{ backgroundColor: 'var(--bg-accent)', color: 'var(--text-on-accent)' }}
+            >
+              M
+            </div>
+            <span className="font-bold text-xl tracking-tight" style={{ color: 'var(--text-primary)' }}>MiniGPT</span>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Create Account</h1>
-          <p className="text-sm text-gray-500 mt-1.5">Start your AI journey today</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Create Account</h1>
+          <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Start your AI journey today</p>
         </div>
 
-        {/* Register Form Card */}
-        <div className="bg-white/[0.03] backdrop-blur-sm rounded-2xl border border-white/5 p-6 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+        {/* Form Card */}
+        <div
+          className="rounded-2xl p-6 max-h-[85vh] overflow-y-auto"
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-primary)',
+            boxShadow: 'var(--shadow-xl)'
+          }}
+        >
           {errors.submit && (
-            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center gap-2">
+            <div
+              className="mb-4 p-3 rounded-lg text-xs flex items-center gap-2"
+              style={{
+                backgroundColor: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                color: '#ef4444'
+              }}
+            >
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errors.submit}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name Field */}
+            {/* Name */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-400 flex items-center gap-1.5">
+              <label className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
                 <User className="w-3.5 h-3.5" /> Full Name
               </label>
               <input
@@ -135,19 +153,19 @@ export const RegisterPage = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className={`w-full px-4 py-2.5 rounded-lg bg-black/40 border ${errors.name ? 'border-red-500/50' : 'border-white/5'
-                  } text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all duration-200`}
+                className="w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200 focus:outline-none"
+                style={inputStyle(errors.name)}
               />
               {errors.name && (
-                <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
+                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#ef4444' }}>
                   <AlertCircle className="w-3 h-3" /> {errors.name}
                 </p>
               )}
             </div>
 
-            {/* Email Field */}
+            {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-400 flex items-center gap-1.5">
+              <label className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
                 <Mail className="w-3.5 h-3.5" /> Email Address
               </label>
               <input
@@ -156,19 +174,19 @@ export const RegisterPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                className={`w-full px-4 py-2.5 rounded-lg bg-black/40 border ${errors.email ? 'border-red-500/50' : 'border-white/5'
-                  } text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all duration-200`}
+                className="w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200 focus:outline-none"
+                style={inputStyle(errors.email)}
               />
               {errors.email && (
-                <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
+                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#ef4444' }}>
                   <AlertCircle className="w-3 h-3" /> {errors.email}
                 </p>
               )}
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-400 flex items-center gap-1.5">
+              <label className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
                 <Lock className="w-3.5 h-3.5" /> Password
               </label>
               <div className="relative">
@@ -178,27 +196,28 @@ export const RegisterPage = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Min 6 characters"
-                  className={`w-full px-4 py-2.5 rounded-lg bg-black/40 border ${errors.password ? 'border-red-500/50' : 'border-white/5'
-                    } text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all duration-200 pr-10`}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm pr-10 transition-all duration-200 focus:outline-none"
+                  style={inputStyle(errors.password)}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
+                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#ef4444' }}>
                   <AlertCircle className="w-3 h-3" /> {errors.password}
                 </p>
               )}
             </div>
 
-            {/* Confirm Password Field */}
+            {/* Confirm Password */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-400 flex items-center gap-1.5">
+              <label className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
                 <Lock className="w-3.5 h-3.5" /> Confirm Password
               </label>
               <div className="relative">
@@ -208,63 +227,68 @@ export const RegisterPage = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirm your password"
-                  className={`w-full px-4 py-2.5 rounded-lg bg-black/40 border ${errors.confirmPassword ? 'border-red-500/50' : 'border-white/5'
-                    } text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-white/20 focus:border-white/20 transition-all duration-200 pr-10`}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm pr-10 transition-all duration-200 focus:outline-none"
+                  style={inputStyle(errors.confirmPassword)}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors"
+                  style={{ color: 'var(--text-muted)' }}
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-xs text-red-400 flex items-center gap-1 mt-1">
+                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#ef4444' }}>
                   <AlertCircle className="w-3 h-3" /> {errors.confirmPassword}
                 </p>
               )}
             </div>
 
-            {/* Terms & Conditions */}
+            {/* Terms */}
             <div className="space-y-1">
-              <label className="flex items-start gap-2 cursor-pointer group">
+              <label className="flex items-start gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   name="agreeTerms"
                   checked={formData.agreeTerms}
                   onChange={handleChange}
-                  className="w-4 h-4 mt-0.5 rounded border-white/10 bg-black/40 text-white focus:ring-0 focus:ring-offset-0 accent-white cursor-pointer"
+                  className="w-4 h-4 mt-0.5 rounded cursor-pointer"
+                  style={{ accentColor: 'var(--bg-accent)' }}
                 />
-                <span className="text-xs text-gray-500 group-hover:text-gray-300 transition-colors">
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                   I agree to the{' '}
-                  <Link to="/terms" className="text-white hover:underline">Terms of Service</Link>
+                  <Link to="/terms" className="font-medium transition-colors" style={{ color: 'var(--text-primary)' }}>Terms of Service</Link>
                   {' '}and{' '}
-                  <Link to="/privacy" className="text-white hover:underline">Privacy Policy</Link>
+                  <Link to="/privacy" className="font-medium transition-colors" style={{ color: 'var(--text-primary)' }}>Privacy Policy</Link>
                 </span>
               </label>
               {errors.agreeTerms && (
-                <p className="text-xs text-red-400 flex items-center gap-1">
+                <p className="text-xs flex items-center gap-1" style={{ color: '#ef4444' }}>
                   <AlertCircle className="w-3 h-3" /> {errors.agreeTerms}
                 </p>
               )}
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-lg bg-white text-black font-semibold text-sm hover:bg-gray-200 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed mt-2 cursor-pointer"
+              className="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 mt-2 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              style={{
+                backgroundColor: 'var(--bg-accent)',
+                color: 'var(--text-on-accent)',
+                boxShadow: 'var(--shadow-md)'
+              }}
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <span className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                  <span className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--text-on-accent)', borderTopColor: 'transparent' }} />
                   Creating account...
                 </span>
               ) : (
-                <>
-                  Create Account <ArrowRight className="w-4 h-4" />
-                </>
+                <>Create Account <ArrowRight className="w-4 h-4" /></>
               )}
             </button>
           </form>
@@ -272,14 +296,14 @@ export const RegisterPage = () => {
           {/* Divider */}
           <div className="relative my-5">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/5"></div>
+              <div className="w-full" style={{ borderTop: '1px solid var(--border-primary)' }} />
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-3 bg-transparent text-gray-500">or sign up with</span>
+              <span className="px-3" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}>or sign up with</span>
             </div>
           </div>
 
-          {/* Social Sign Up */}
+          {/* Social */}
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Github, label: 'GitHub' },
@@ -289,7 +313,12 @@ export const RegisterPage = () => {
               <button
                 key={provider.label}
                 type="button"
-                className="py-2.5 rounded-lg border border-white/5 bg-white/5 text-gray-400 text-xs font-medium hover:bg-white/10 hover:text-white transition-all duration-200 flex items-center justify-center gap-1.5"
+                className="py-2.5 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02]"
+                style={{
+                  border: '1px solid var(--border-primary)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-secondary)'
+                }}
               >
                 <provider.icon className="w-3.5 h-3.5" />
                 {provider.label}
@@ -297,42 +326,20 @@ export const RegisterPage = () => {
             ))}
           </div>
 
-          {/* Login Link */}
-          <p className="text-center text-xs text-gray-500 mt-5">
+          <p className="text-center text-xs mt-5" style={{ color: 'var(--text-muted)' }}>
             Already have an account?{' '}
-            <Link to="/login" className="text-white hover:text-gray-300 font-medium transition-colors">
+            <Link to="/login" className="font-medium transition-colors" style={{ color: 'var(--text-primary)' }}>
               Sign in instead
             </Link>
           </p>
         </div>
 
-        {/* Trust Badges */}
-        <div className="mt-5 flex items-center justify-center gap-4 text-xs text-gray-500">
-          <span className="flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5" /> Secure Registration
-          </span>
-          <span className="flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Encrypted Data
-          </span>
+        {/* Trust */}
+        <div className="mt-5 flex items-center justify-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Secure Registration</span>
+          <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Encrypted Data</span>
         </div>
       </div>
-
-      {/* Custom scrollbar styles */}
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-      `}</style>
     </div>
   );
 };

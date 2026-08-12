@@ -2,49 +2,43 @@ import React from 'react';
 import { Cpu, Sparkles, Zap } from 'lucide-react';
 import useChatStore from '../../store/chatStore';
 
+const models = [
+  { id: 'gemini', label: 'Gemini 3.6', shortLabel: 'Gemini', icon: Sparkles },
+  { id: 'openai', label: 'GPT-4o', shortLabel: 'GPT-4o', icon: Cpu },
+  { id: 'mistral', label: 'Mistral AI', shortLabel: 'Mistral', icon: Zap },
+];
+
 export const ModelSelector = () => {
   const { selectedModel, setSelectedModel } = useChatStore();
 
   return (
-    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-gray-900/80 border border-gray-800">
-      <button
-        type="button"
-        onClick={() => setSelectedModel('gemini')}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-          selectedModel === 'gemini'
-            ? 'bg-white text-black shadow-md shadow-slate-900/20'
-            : 'text-gray-400 hover:text-gray-200'
-        }`}
-      >
-        <Sparkles className="w-3.5 h-3.5 text-gray-500" />
-        <span>Gemini 3.6</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setSelectedModel('openai')}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-          selectedModel === 'openai'
-            ? 'bg-white text-black shadow-md shadow-slate-900/20'
-            : 'text-gray-400 hover:text-gray-200'
-        }`}
-      >
-        <Cpu className="w-3.5 h-3.5 text-gray-500" />
-        <span>GPT-4o</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => setSelectedModel('mistral')}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
-          selectedModel === 'mistral'
-            ? 'bg-white text-black shadow-md shadow-slate-900/20'
-            : 'text-gray-400 hover:text-gray-200'
-        }`}
-      >
-        <Zap className="w-3.5 h-3.5 text-gray-500" />
-        <span>Mistral AI</span>
-      </button>
+    <div
+      className="flex items-center gap-1 p-1 rounded-xl max-w-full overflow-x-auto shrink-0"
+      style={{
+        backgroundColor: 'var(--bg-secondary)',
+        border: '1px solid var(--border-secondary)'
+      }}
+    >
+      {models.map((m) => {
+        const isActive = selectedModel === m.id;
+        return (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => setSelectedModel(m.id)}
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition-all duration-200 shrink-0"
+            style={{
+              backgroundColor: isActive ? 'var(--bg-accent)' : 'transparent',
+              color: isActive ? 'var(--text-on-accent)' : 'var(--text-tertiary)',
+              boxShadow: isActive ? 'var(--shadow-sm)' : 'none'
+            }}
+          >
+            <m.icon className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{m.label}</span>
+            <span className="sm:hidden">{m.shortLabel}</span>
+          </button>
+        );
+      })}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import KnowledgeBase from '../features/knowledge/KnowledgeBase';
 
 export const KnowledgePage = () => {
   return (
-    <div className="p-4 sm:p-6 w-full">
+    <div className="p-3 sm:p-6 w-full">
       <KnowledgeBase />
     </div>
   );

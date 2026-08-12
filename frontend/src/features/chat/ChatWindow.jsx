@@ -40,7 +40,6 @@ export const ChatWindow = () => {
     setIsGenerating(true);
     setActiveRouterIntent(null);
 
-    // Temp assistant bubble placeholder
     const assistantMsg = {
       id: `assistant-${Date.now()}`,
       role: 'assistant',
@@ -74,57 +73,107 @@ export const ChatWindow = () => {
     }
   };
 
+  const featureCards = [
+    {
+      icon: Brain,
+      title: 'Intent Router',
+      desc: 'Classifies whether to use LLM, RAG documents, or external tools.'
+    },
+    {
+      icon: Database,
+      title: 'pgvector RAG',
+      desc: 'Upload PDFs/Notes for intelligent semantic retrieval.'
+    },
+    {
+      icon: Wrench,
+      title: 'API Tools',
+      desc: 'Calculates math, checks weather, and performs live web search.'
+    }
+  ];
+
   return (
-    <div className="flex flex-col h-full w-full relative">
-      {/* Messages Scroll View */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+    <div
+      className="flex flex-col h-full w-full relative theme-transition"
+      style={{ backgroundColor: 'var(--bg-primary)' }}
+    >
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-6 max-w-xl mx-auto py-12">
-            <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center text-white shadow-2xl shadow-slate-900/40 animate-bounce">
-              <Sparkles className="w-8 h-8 text-gray-200" />
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-4 sm:space-y-6 max-w-xl mx-auto py-6 sm:py-12 px-2 animate-fade-in">
+            <div
+              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center animate-float shrink-0"
+              style={{
+                backgroundColor: 'var(--bg-accent)',
+                color: 'var(--text-on-accent)',
+                boxShadow: 'var(--shadow-lg)'
+              }}
+            >
+              <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
             </div>
-            <div className="space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">MiniGPT AI Assistant</h2>
-              <p className="text-sm text-gray-400">
-                Your daily life problem-solving agent with an intelligent <span className="text-gray-200 font-semibold">Router Architecture</span>.
+
+            <div className="space-y-1.5 sm:space-y-2">
+              <h2
+                className="text-lg sm:text-2xl font-semibold tracking-tight"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                MiniGPT AI Assistant
+              </h2>
+              <p className="text-xs sm:text-sm" style={{ color: 'var(--text-tertiary)' }}>
+                Your daily life problem-solving agent with an intelligent{' '}
+                <span className="font-medium" style={{ color: 'var(--text-secondary)' }}>
+                  Router Architecture
+                </span>.
               </p>
             </div>
 
-            {/* Feature Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full pt-4">
-              <div className="p-3.5 rounded-xl glass-panel border border-white/10 text-left space-y-1">
-                <div className="flex items-center gap-2 text-gray-300 font-semibold text-xs">
-                  <Brain className="w-4 h-4" />
-                  <span>Intent Router</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full pt-2">
+              {featureCards.map((card, i) => (
+                <div
+                  key={card.title}
+                  className={`p-3 sm:p-3.5 rounded-xl text-left space-y-1 sm:space-y-1.5 transition-all duration-200 animate-fade-in-up stagger-${i + 1}`}
+                  style={{
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-primary)',
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <card.icon className="w-4 h-4 shrink-0" style={{ color: 'var(--text-secondary)' }} />
+                    <span
+                      className="font-semibold text-xs"
+                      style={{ color: 'var(--text-primary)' }}
+                    >
+                      {card.title}
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                    {card.desc}
+                  </p>
                 </div>
-                <p className="text-[11px] text-gray-400">Classifies whether to use LLM, RAG documents, or external tools.</p>
-              </div>
-
-              <div className="p-3.5 rounded-xl glass-panel border border-white/10 text-left space-y-1">
-                <div className="flex items-center gap-2 text-gray-300 font-semibold text-xs">
-                  <Database className="w-4 h-4" />
-                  <span>pgvector RAG</span>
-                </div>
-                <p className="text-[11px] text-gray-400">Upload PDFs/Notes for intelligent semantic retrieval.</p>
-              </div>
-
-              <div className="p-3.5 rounded-xl glass-panel border border-white/10 text-left space-y-1">
-                <div className="flex items-center gap-2 text-gray-300 font-semibold text-xs">
-                  <Wrench className="w-4 h-4" />
-                  <span>API Tools</span>
-                </div>
-                <p className="text-[11px] text-gray-400">Calculates math, checks weather, and performs live web search.</p>
-              </div>
+              ))}
             </div>
           </div>
         ) : (
-          messages.map((msg) => <MessageBubble key={msg.id} message={msg} />)
+          messages.map((msg, i) => (
+            <div
+              key={msg.id}
+              className="animate-fade-in"
+              style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
+            >
+              <MessageBubble message={msg} />
+            </div>
+          ))
         )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Box Footer */}
-      <div className="p-4 sm:p-6 border-t border-gray-800/80 bg-[#090d16]/90 backdrop-blur-md">
+      {/* Input */}
+      <div
+        className="p-2.5 sm:p-4 md:p-6 theme-transition shrink-0"
+        style={{
+          borderTop: '1px solid var(--border-primary)',
+          backgroundColor: 'var(--bg-primary)',
+        }}
+      >
         <ChatInput onSend={handleSendMessage} disabled={isGenerating} />
       </div>
     </div>

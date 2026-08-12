@@ -19,9 +19,13 @@ export const FilesPage = () => {
 
   return (
     <div className="p-4 sm:p-6 space-y-6 max-w-4xl mx-auto w-full">
-      <div className="space-y-1">
-        <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">AWS S3 File Storage & RAG Engine</h1>
-        <p className="text-xs text-gray-400">Upload documents to index into Neon pgvector embeddings for instant AI retrieval.</p>
+      <div className="space-y-1 animate-fade-in">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          AWS S3 File Storage & RAG Engine
+        </h1>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+          Upload documents to index into Neon pgvector embeddings for instant AI retrieval.
+        </p>
       </div>
 
       <FileUpload onUploadSuccess={loadFiles} />
