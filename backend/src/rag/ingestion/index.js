@@ -2,6 +2,7 @@ import { extractTextFromFile } from './extractors.js';
 import { chunkText } from '../chunking/index.js';
 import { generateEmbedding } from '../embeddings/index.js';
 import prisma from '../../db/client.js';
+import { saveInMemoryDocument, saveInMemoryFile } from '../store.js';
 
 export const processFileForRAG = async ({ fileId, userId, buffer, mimeType, filename }) => {
   try {
@@ -10,49 +11,65 @@ export const processFileForRAG = async ({ fileId, userId, buffer, mimeType, file
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
+      const metadata = { filename, chunkIndex: i, totalChunks: chunks.length };
       const embedding = await generateEmbedding(chunk);
 
+      // Save to shared in-memory RAG store for immediate retrieval
+      saveInMemoryDocument({
+        id: `doc-${fileId}-${i}`,
+        content: chunk,
+        metadata,
+        fileId,
+        userId,
+        embedding
+      });
+
       try {
-        // Formatted pgvector array string representation: '[0.1, 0.2, ...]'
         const vectorString = `[${embedding.join(',')}]`;
-        
         await prisma.$executeRawUnsafe(
           `INSERT INTO "Document" ("id", "content", "metadata", "embedding", "fileId", "userId", "createdAt")
            VALUES ($1, $2, $3, $4::vector, $5, $6, NOW())`,
           `doc-${fileId}-${i}`,
           chunk,
-          JSON.stringify({ filename, chunkIndex: i, totalChunks: chunks.length }),
+          JSON.stringify(metadata),
           vectorString,
           fileId,
           userId
         );
       } catch (dbErr) {
-        // Fallback store without vector column if pgvector extension isn't initialized on DB instance yet
-        await prisma.document.create({
-          data: {
-            id: `doc-${fileId}-${i}`,
-            content: chunk,
-            metadata: { filename, chunkIndex: i, totalChunks: chunks.length },
-            fileId,
-            userId
-          }
-        });
+        try {
+          await prisma.document.create({
+            data: {
+              id: `doc-${fileId}-${i}`,
+              content: chunk,
+              metadata,
+              fileId,
+              userId
+            }
+          });
+        } catch (e) {}
       }
     }
 
-    // Mark file as completed
-    await prisma.file.update({
-      where: { id: fileId },
-      data: { status: 'completed', chunkCount: chunks.length }
-    });
+    saveInMemoryFile({ id: fileId, userId, status: 'completed', chunkCount: chunks.length });
+
+    try {
+      await prisma.file.update({
+        where: { id: fileId },
+        data: { status: 'completed', chunkCount: chunks.length }
+      });
+    } catch (e) {}
 
     return { success: true, chunksCount: chunks.length };
   } catch (error) {
     console.error('RAG Ingestion Error:', error);
-    await prisma.file.update({
-      where: { id: fileId },
-      data: { status: 'failed' }
-    });
+    saveInMemoryFile({ id: fileId, userId, status: 'failed' });
+    try {
+      await prisma.file.update({
+        where: { id: fileId },
+        data: { status: 'failed' }
+      });
+    } catch (e) {}
     throw error;
   }
 };

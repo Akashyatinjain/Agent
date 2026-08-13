@@ -3,7 +3,7 @@ import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import useChatStore from '../../store/chatStore';
 import { sendMessageStreamApi } from '../../api/chat';
-import { Sparkles, Brain, Database, Wrench } from 'lucide-react';
+import { Sparkles, Brain, Database, Wrench, Loader2 } from 'lucide-react';
 
 export const ChatWindow = () => {
   const {
@@ -15,7 +15,9 @@ export const ChatWindow = () => {
     selectedModel,
     isGenerating,
     setIsGenerating,
-    setActiveRouterIntent
+    isLoadingMessages,
+    setActiveRouterIntent,
+    fetchConversations
   } = useChatStore();
 
   const messagesEndRef = useRef(null);
@@ -70,6 +72,7 @@ export const ChatWindow = () => {
     } finally {
       setIsGenerating(false);
       setActiveRouterIntent(null);
+      fetchConversations();
     }
   };
 
@@ -96,9 +99,16 @@ export const ChatWindow = () => {
       className="flex flex-col h-full w-full relative theme-transition min-h-0"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
-      {/* Messages */}
+      {/* Messages Container */}
       <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
-        {messages.length === 0 ? (
+        {isLoadingMessages ? (
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-3 animate-fade-in my-auto">
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--text-secondary)' }} />
+            <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
+              Loading conversation history...
+            </p>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-full text-center space-y-3 sm:space-y-6 max-w-xl mx-auto py-2 sm:py-8 px-1 animate-fade-in my-auto">
             <div
               className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center animate-float shrink-0"
@@ -156,7 +166,7 @@ export const ChatWindow = () => {
         ) : (
           messages.map((msg, i) => (
             <div
-              key={msg.id}
+              key={msg.id || i}
               className="animate-fade-in"
               style={{ animationDelay: `${Math.min(i * 50, 300)}ms` }}
             >
@@ -175,7 +185,7 @@ export const ChatWindow = () => {
           backgroundColor: 'var(--bg-primary)',
         }}
       >
-        <ChatInput onSend={handleSendMessage} disabled={isGenerating} />
+        <ChatInput onSend={handleSendMessage} disabled={isGenerating || isLoadingMessages} />
       </div>
     </div>
   );

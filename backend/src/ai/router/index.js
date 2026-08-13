@@ -32,17 +32,29 @@ export const routeAndExecute = async ({
   let ragChunks = [];
   let toolResults = [];
 
-  // Step 2: RAG Pipeline Execution if pipeline is 'rag' or 'hybrid'
-  if (pipeline === ROUTER_TYPES.RAG || pipeline === ROUTER_TYPES.HYBRID) {
+  // Step 2: RAG Pipeline Execution
+  try {
     const rawChunks = await retrieveRelevantChunks({
       query: classification.ragQuery || userMessage,
       userId,
       topK: 5
     });
-    ragChunks = rerankChunks(rawChunks, userMessage);
-    if (ragChunks.length > 0) {
-      ragContextText = ragChunks.map((c, i) => `[Chunk ${i + 1} (${c.metadata?.filename || 'Document'})]:\n${c.content}`).join('\n\n');
+
+    if (rawChunks.length > 0) {
+      const reranked = rerankChunks(rawChunks, userMessage);
+      // Include chunks if explicit RAG/HYBRID pipeline or if similarity match is high
+      const isExplicitRag = pipeline === ROUTER_TYPES.RAG || pipeline === ROUTER_TYPES.HYBRID;
+      const relevantChunks = isExplicitRag
+        ? reranked
+        : reranked.filter((c) => c.similarity > 0.4 || (c.rerankScore && c.rerankScore > 0.6));
+
+      if (relevantChunks.length > 0) {
+        ragChunks = relevantChunks;
+        ragContextText = ragChunks.map((c, i) => `[Chunk ${i + 1} (${c.metadata?.filename || 'Document'})]:\n${c.content}`).join('\n\n');
+      }
     }
+  } catch (ragErr) {
+    console.warn('RAG Retrieval warning:', ragErr.message);
   }
 
   // Step 3: Tool Pipeline Execution if pipeline is 'tool' or 'hybrid'

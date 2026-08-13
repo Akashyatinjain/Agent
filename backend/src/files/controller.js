@@ -1,6 +1,7 @@
 import prisma from '../db/client.js';
 import { uploadToS3, deleteFromS3 } from '../config/s3.js';
 import processFileForRAG from '../rag/ingestion/index.js';
+import { saveInMemoryFile, getInMemoryFiles, deleteInMemoryFile } from '../rag/store.js';
 
 export const uploadFile = async (req, res, next) => {
   try {
@@ -41,6 +42,8 @@ export const uploadFile = async (req, res, next) => {
       };
     }
 
+    saveInMemoryFile(dbFile);
+
     // Trigger async RAG ingestion
     processFileForRAG({
       fileId: dbFile.id,
@@ -71,7 +74,13 @@ export const getFiles = async (req, res, next) => {
     } catch (e) {
       files = [];
     }
-    return res.json({ success: true, files });
+
+    const memFiles = getInMemoryFiles(userId);
+    const fileMap = new Map();
+    memFiles.forEach((f) => fileMap.set(f.id, f));
+    files.forEach((f) => fileMap.set(f.id, f));
+
+    return res.json({ success: true, files: Array.from(fileMap.values()) });
   } catch (error) {
     next(error);
   }
@@ -81,6 +90,8 @@ export const deleteFile = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
+
+    deleteInMemoryFile(id, userId);
 
     try {
       const file = await prisma.file.findFirst({ where: { id, userId } });

@@ -15,12 +15,20 @@ export const sendMessage = async (req, res, next) => {
 
     let activeConversationId = conversationId;
 
+    const formatTitle = (msg) => {
+      const clean = msg.trim();
+      if (!clean) return 'New Conversation';
+      const firstLine = clean.split('\n')[0];
+      if (firstLine.length <= 35) return firstLine;
+      return firstLine.substring(0, 35).trim() + '...';
+    };
+
     // Create a new conversation if not passed
     if (!activeConversationId) {
       try {
         const newConv = await prisma.conversation.create({
           data: {
-            title: message.substring(0, 30) + '...',
+            title: formatTitle(message),
             userId,
             model
           }
@@ -87,6 +95,10 @@ export const sendMessage = async (req, res, next) => {
             toolCalls: metadata.toolResults ? JSON.stringify(metadata.toolResults) : null,
             ragContext: metadata.ragChunks ? JSON.stringify(metadata.ragChunks) : null
           }
+        });
+        await prisma.conversation.update({
+          where: { id: activeConversationId },
+          data: { updatedAt: new Date() }
         });
       } catch (e) {}
 

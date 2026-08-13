@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   MessageSquare, Folder, Brain, Settings, LogOut,
-  Plus, ChevronLeft, Menu, Hash, X
+  Plus, ChevronLeft, Menu, Hash, X, Trash2
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useChatStore from '../../store/chatStore';
@@ -11,15 +11,38 @@ import ThemeToggle from './ThemeToggle';
 
 export const Sidebar = () => {
   const { user, logout } = useAuthStore();
-  const { conversations, currentConversationId, setCurrentConversationId, setMessages } = useChatStore();
+  const {
+    conversations,
+    currentConversationId,
+    loadConversation,
+    deleteConversation,
+    fetchConversations,
+    setCurrentConversationId,
+    setMessages
+  } = useChatStore();
   const { isSidebarOpen, toggleSidebar, closeSidebarOnMobile } = useUIStore();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchConversations();
+  }, [fetchConversations]);
 
   const handleNewChat = () => {
     setCurrentConversationId(null);
     setMessages([]);
     closeSidebarOnMobile();
     navigate('/chat');
+  };
+
+  const handleSelectConversation = (id) => {
+    loadConversation(id);
+    closeSidebarOnMobile();
+    navigate('/chat');
+  };
+
+  const handleDeleteConversation = (e, id) => {
+    e.stopPropagation();
+    deleteConversation(id);
   };
 
   const handleLogout = () => {
@@ -142,25 +165,35 @@ export const Sidebar = () => {
             >
               Recent
             </span>
-            {conversations.slice(0, 8).map((conv, i) => (
-              <button
-                key={conv.id}
-                onClick={() => {
-                  setCurrentConversationId(conv.id);
-                  closeSidebarOnMobile();
-                  navigate('/chat');
-                }}
-                className={`w-full text-left px-3 py-2 rounded-lg text-xs truncate transition-all duration-200 flex items-center gap-2 animate-fade-in`}
-                style={{
-                  backgroundColor: currentConversationId === conv.id ? 'var(--bg-hover)' : 'transparent',
-                  color: currentConversationId === conv.id ? 'var(--text-primary)' : 'var(--text-tertiary)',
-                  animationDelay: `${i * 30}ms`
-                }}
-              >
-                <Hash className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
-                <span className="truncate">{conv.title}</span>
-              </button>
-            ))}
+            {conversations.slice(0, 15).map((conv, i) => {
+              const isSelected = currentConversationId === conv.id;
+              return (
+                <div
+                  key={conv.id}
+                  onClick={() => handleSelectConversation(conv.id)}
+                  className="group relative w-full text-left px-3 py-2 rounded-lg text-xs transition-all duration-200 flex items-center justify-between cursor-pointer animate-fade-in"
+                  style={{
+                    backgroundColor: isSelected ? 'var(--bg-hover)' : 'transparent',
+                    color: isSelected ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                    border: isSelected ? '1px solid var(--border-primary)' : '1px solid transparent',
+                    animationDelay: `${i * 25}ms`
+                  }}
+                >
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Hash className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                    <span className="truncate">{conv.title || 'Untitled Chat'}</span>
+                  </div>
+
+                  <button
+                    onClick={(e) => handleDeleteConversation(e, conv.id)}
+                    className="p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity hover:text-red-400 flex-shrink-0 ml-1"
+                    title="Delete Chat"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -220,3 +253,4 @@ export const Sidebar = () => {
 };
 
 export default Sidebar;
+

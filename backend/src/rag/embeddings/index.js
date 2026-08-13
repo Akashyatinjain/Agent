@@ -25,7 +25,7 @@ export const generateEmbedding = async (text) => {
 
   // Try Gemini embeddings
   if (geminiKey && geminiKey.trim() !== '') {
-    const embeddingModels = ['gemini-embedding-001', 'gemini-embedding-2', 'gemini-embedding-2-preview', 'text-embedding-004'];
+    const embeddingModels = ['text-embedding-004', 'embedding-001'];
     for (const modelName of embeddingModels) {
       try {
         const genAI = new GoogleGenerativeAI(geminiKey);
