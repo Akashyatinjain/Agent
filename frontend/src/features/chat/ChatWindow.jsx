@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
@@ -21,7 +21,6 @@ export const ChatWindow = () => {
     setCurrentConversationId,
     selectedModel,
     selectedAgent,
-    setSelectedAgent,
     isGenerating,
     setIsGenerating,
     isLoadingMessages,
@@ -34,19 +33,19 @@ export const ChatWindow = () => {
   const navigate = useNavigate();
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [activeSelectedDoc, setActiveSelectedDoc] = useState(null); // Never auto-select!
+  const [activeSelectedDoc, setActiveSelectedDoc] = useState(null);
   const messagesEndRef = useRef(null);
   const activeConversationIdRef = useRef(currentConversationId);
   const abortControllerRef = useRef(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const containerRef = useRef(null);
+  const composerInputRef = useRef(null);
 
   const fetchUserFiles = async () => {
     try {
       const res = await getFilesApi();
       if (res.success && Array.isArray(res.files)) {
         setUploadedFiles(res.files);
-        // Note: Do NOT auto-select files; user must explicitly choose or attach
       }
     } catch (e) {}
   };
@@ -58,6 +57,24 @@ export const ChatWindow = () => {
   useEffect(() => {
     activeConversationIdRef.current = currentConversationId;
   }, [currentConversationId]);
+
+  const handleNewChatClick = useCallback(() => {
+    startNewChat();
+    setActiveSelectedDoc(null);
+    navigate('/chat');
+  }, [startNewChat, navigate]);
+
+  // Global Ctrl+K / Cmd+K listener for instant New Chat
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        handleNewChatClick();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNewChatClick]);
 
   const scrollToBottom = (smooth = true) => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
@@ -74,12 +91,6 @@ export const ChatWindow = () => {
     setShowScrollBottom(!isNearBottom);
   };
 
-  const handleNewChatClick = () => {
-    startNewChat();
-    setActiveSelectedDoc(null);
-    navigate('/chat');
-  };
-
   const handleToggleDocTarget = (file) => {
     setActiveSelectedDoc((prev) => (prev?.id === file.id ? null : file));
   };
@@ -87,7 +98,6 @@ export const ChatWindow = () => {
   const handleSendMessage = async (text, attachedFile = null) => {
     if (!text || isGenerating) return;
 
-    // Only attach if user explicitly passed a file or toggled a document
     const fileToAttach = attachedFile || activeSelectedDoc || null;
 
     const userMsg = {
@@ -159,9 +169,9 @@ export const ChatWindow = () => {
     }
   };
 
-  const handleRegenerate = (lastUserMessage) => {
+  const handleRegenerate = (lastUserMessage, attachedDoc = null) => {
     if (lastUserMessage && !isGenerating) {
-      handleSendMessage(lastUserMessage);
+      handleSendMessage(lastUserMessage, attachedDoc);
     }
   };
 
@@ -171,30 +181,30 @@ export const ChatWindow = () => {
   const promptCategories = useMemo(() => [
     {
       icon: FileText,
-      tag: 'Documents',
+      tag: 'Documents & RAG',
       title: uploadedFiles.length > 0 ? `Analyze ${uploadedFiles[0].name.slice(0, 24)}...` : 'Analyze uploaded document',
-      desc: 'Extract key insights, certifications, and details from your files',
+      desc: 'Extract key insights, certifications, and questions from your files',
       prompt: uploadedFiles.length > 0
-        ? `Review and extract key details from ${uploadedFiles[0].name}`
+        ? `Review and summarize key details from ${uploadedFiles[0].name}`
         : 'Analyze and review my uploaded document in detail'
     },
     {
       icon: Compass,
-      tag: 'Resume & Profile',
+      tag: 'Resume Review',
       title: 'Review my resume',
       desc: 'Get structured feedback on strengths, gaps, and improvements',
       prompt: 'Review my resume: highlight key strengths, gaps, and suggested improvements'
     },
     {
       icon: Search,
-      tag: 'Research',
+      tag: 'Live Research',
       title: 'Real-time weather & web',
       desc: 'Query live forecasts, temperatures, and current web facts',
       prompt: 'What is the current weather in Tokyo and forecast for this week?'
     },
     {
       icon: Code,
-      tag: 'Coding & Logic',
+      tag: 'Logic & Code',
       title: 'Calculate & logic evaluation',
       desc: 'Evaluate expressions and structure data seamlessly',
       prompt: 'Calculate 1450 * 12 - (3400 / 4) + 18% of 2500'
@@ -267,14 +277,14 @@ export const ChatWindow = () => {
             style={{ color: 'var(--text-tertiary)' }}
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}
-            title="New Chat"
+            title="New Chat (Ctrl+K)"
           >
             <Plus className="w-4 h-4" />
           </button>
         </div>
       </header>
 
-      {/* Available Documents Bar (Only if user has uploaded docs; clickable to toggle targeting) */}
+      {/* Target Document Bar (Only if user has uploaded docs; clickable to toggle targeting) */}
       {uploadedFiles.length > 0 && (
         <div
           className="px-3.5 sm:px-6 py-1.5 flex items-center justify-between gap-2 text-xs shrink-0 overflow-x-auto"
@@ -381,7 +391,7 @@ export const ChatWindow = () => {
         ) : (
           messages.map((msg, i) => {
             const isLastAssistant = !isGenerating && i === messages.length - 1 && msg.role === 'assistant';
-            const prevUserMsg = i > 0 && messages[i - 1]?.role === 'user' ? messages[i - 1].content : null;
+            const prevUserMsg = i > 0 && messages[i - 1]?.role === 'user' ? messages[i - 1] : null;
 
             return (
               <div
@@ -391,7 +401,8 @@ export const ChatWindow = () => {
                 <MessageBubble
                   message={msg}
                   isStreaming={isGenerating && i === messages.length - 1 && msg.role === 'assistant'}
-                  onRegenerate={isLastAssistant && prevUserMsg ? () => handleRegenerate(prevUserMsg) : null}
+                  onRegenerate={isLastAssistant && prevUserMsg ? () => handleRegenerate(prevUserMsg.content, prevUserMsg.attachedFile) : null}
+                  onRetry={isLastAssistant && prevUserMsg && msg.content.includes('Error') ? () => handleRegenerate(prevUserMsg.content, prevUserMsg.attachedFile) : null}
                 />
               </div>
             );
@@ -425,6 +436,7 @@ export const ChatWindow = () => {
         }}
       >
         <ChatInput
+          ref={composerInputRef}
           onSend={handleSendMessage}
           onStop={handleStopGeneration}
           disabled={isLoadingMessages}

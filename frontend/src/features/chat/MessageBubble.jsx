@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import {
   Sparkles, User, Copy, Check, RotateCcw, Loader2, FileText,
-  CheckCircle2, AlertTriangle, RefreshCw
+  CheckCircle2, AlertTriangle, RefreshCw, ThumbsUp, ThumbsDown
 } from 'lucide-react';
 import ToolCallDisplay from './ToolCallDisplay';
 import RagContextDisplay from './RagContextDisplay';
@@ -60,6 +60,7 @@ const CodeBlock = ({ language, code, isDark }) => {
 
 export const MessageBubble = ({ message, isStreaming = false, onRegenerate = null, onRetry = null }) => {
   const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState(null); // 'up' | 'down' | null
   const { theme } = useUIStore();
   const isUser = message.role === 'user';
   const isDark = theme === 'dark';
@@ -132,7 +133,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
 
   return (
     <div
-      className="flex gap-3 sm:gap-4 p-4 rounded-2xl max-w-[95%] sm:max-w-2xl md:max-w-3xl transition-all duration-200"
+      className="group flex gap-3 sm:gap-4 p-4 rounded-2xl max-w-[95%] sm:max-w-2xl md:max-w-3xl transition-all duration-200"
       style={{
         marginLeft: isUser ? 'auto' : undefined,
         marginRight: isUser ? undefined : 'auto',
@@ -180,27 +181,6 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
           </div>
 
           <div className="flex items-center gap-1">
-            {onRegenerate && (
-              <button
-                type="button"
-                onClick={onRegenerate}
-                className="p-1 rounded-lg transition-colors cursor-pointer"
-                style={{ color: 'var(--text-muted)' }}
-                title="Regenerate response"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-              </button>
-            )}
-            {onRetry && (
-              <button
-                type="button"
-                onClick={onRetry}
-                className="p-1 rounded-lg transition-colors cursor-pointer text-amber-500 hover:bg-amber-500/10"
-                title="Retry request"
-              >
-                <RefreshCw className="w-3.5 h-3.5" />
-              </button>
-            )}
             <button
               type="button"
               onClick={handleCopy}
@@ -338,6 +318,67 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
             {message.content || (isStreaming ? 'Thinking...' : '')}
           </ReactMarkdown>
         </div>
+
+        {/* Subtle Bottom Action Bar on Assistant Messages */}
+        {!isUser && !isStreaming && (
+          <div
+            className="flex items-center gap-2 pt-2 mt-1 border-t border-[var(--border-secondary)] text-[11px] opacity-70 group-hover:opacity-100 transition-opacity"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer"
+              title="Copy answer"
+            >
+              {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+              <span>{copied ? 'Copied' : 'Copy'}</span>
+            </button>
+
+            {onRegenerate && (
+              <button
+                type="button"
+                onClick={onRegenerate}
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer"
+                title="Regenerate answer"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Regenerate</span>
+              </button>
+            )}
+
+            {onRetry && (
+              <button
+                type="button"
+                onClick={onRetry}
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded hover:bg-amber-500/10 text-amber-500 transition-colors cursor-pointer"
+                title="Retry request"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Retry</span>
+              </button>
+            )}
+
+            <div className="flex items-center gap-1 ml-auto">
+              <button
+                type="button"
+                onClick={() => setFeedback(feedback === 'up' ? null : 'up')}
+                className={`p-1 rounded transition-colors cursor-pointer ${feedback === 'up' ? 'text-emerald-400 bg-emerald-500/10' : 'hover:bg-[var(--bg-secondary)]'}`}
+                title="Helpful"
+              >
+                <ThumbsUp className="w-3 h-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setFeedback(feedback === 'down' ? null : 'down')}
+                className={`p-1 rounded transition-colors cursor-pointer ${feedback === 'down' ? 'text-red-400 bg-red-500/10' : 'hover:bg-[var(--bg-secondary)]'}`}
+                title="Not helpful"
+              >
+                <ThumbsDown className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
