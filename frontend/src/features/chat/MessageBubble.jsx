@@ -109,7 +109,6 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
     );
   };
 
-  // GPT-style message styling
   const bubbleStyle = isUser
     ? {
         backgroundColor: isDark ? '#27272a' : '#f4f4f5',
@@ -247,31 +246,55 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
         {!isUser && <ToolCallDisplay toolCalls={message.toolCalls} />}
 
         <div
-          className="prose max-w-none text-sm leading-relaxed overflow-hidden break-words"
+          className="prose max-w-none text-sm leading-relaxed overflow-hidden break-words space-y-2"
           style={{ color: isUser ? (isDark ? '#fafafa' : '#09090b') : 'var(--text-primary)' }}
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
+              h1({ children }) {
+                return <h1 className="text-lg font-bold mt-4 mb-2 pb-1 border-b border-[var(--border-secondary)]">{children}</h1>;
+              },
+              h2({ children }) {
+                return <h2 className="text-base font-bold mt-3.5 mb-1.5 text-emerald-500">{children}</h2>;
+              },
+              h3({ children }) {
+                return <h3 className="text-sm font-bold mt-3 mb-1.5 flex items-center gap-1.5">{children}</h3>;
+              },
+              h4({ children }) {
+                return <h4 className="text-xs font-bold uppercase tracking-wider mt-2.5 mb-1 text-[var(--text-secondary)]">{children}</h4>;
+              },
+              hr() {
+                return <hr className="my-3 border-[var(--border-secondary)] opacity-60" />;
+              },
+              ul({ children }) {
+                return <ul className="list-disc list-inside space-y-1.5 my-2 pl-1">{children}</ul>;
+              },
+              ol({ children }) {
+                return <ol className="list-decimal list-inside space-y-1.5 my-2 pl-1 font-medium">{children}</ol>;
+              },
+              li({ children }) {
+                return <li className="leading-relaxed" style={{ color: 'inherit' }}>{children}</li>;
+              },
               table({ children }) {
                 return (
-                  <div className="my-3 overflow-x-auto rounded-xl border border-[var(--border-primary)]">
+                  <div className="my-3 overflow-x-auto rounded-xl border border-[var(--border-primary)] shadow-xs">
                     <table className="w-full text-xs text-left border-collapse">{children}</table>
                   </div>
                 );
               },
               thead({ children }) {
-                return <thead className="bg-[var(--bg-secondary)] border-b border-[var(--border-primary)]">{children}</thead>;
+                return <thead className="bg-[var(--bg-secondary)] border-b border-[var(--border-primary)] font-bold">{children}</thead>;
               },
               th({ children }) {
-                return <th className="px-3 py-2 font-bold text-[var(--text-primary)]">{children}</th>;
+                return <th className="px-3.5 py-2.5 font-bold text-[var(--text-primary)]">{children}</th>;
               },
               td({ children }) {
-                return <td className="px-3 py-2 border-t border-[var(--border-secondary)] text-[var(--text-secondary)]">{children}</td>;
+                return <td className="px-3.5 py-2 border-t border-[var(--border-secondary)] text-[var(--text-secondary)]">{children}</td>;
               },
               blockquote({ children }) {
                 return (
-                  <blockquote className="border-l-2 border-emerald-500 pl-3 my-2 italic text-[var(--text-secondary)]">
+                  <blockquote className="border-l-2 border-emerald-500 pl-3.5 my-2.5 italic text-[var(--text-secondary)] bg-[var(--bg-secondary)] py-1.5 rounded-r-lg">
                     {children}
                   </blockquote>
                 );
@@ -294,7 +317,8 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
                   <code
                     className="px-1.5 py-0.5 rounded font-mono text-xs"
                     style={{
-                      backgroundColor: 'var(--bg-code)',
+                      backgroundColor: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-secondary)',
                       color: 'var(--text-primary)'
                     }}
                     {...props}
@@ -304,13 +328,10 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
                 );
               },
               p({ children }) {
-                return <p className="mb-2 last:mb-0" style={{ color: 'inherit' }}>{children}</p>;
+                return <p className="mb-2 last:mb-0 leading-relaxed" style={{ color: 'inherit' }}>{children}</p>;
               },
               strong({ children }) {
                 return <strong style={{ color: 'inherit', fontWeight: 'bold' }}>{children}</strong>;
-              },
-              li({ children }) {
-                return <li className="my-0.5" style={{ color: 'inherit' }}>{children}</li>;
               }
             }}
           >
