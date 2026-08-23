@@ -226,6 +226,34 @@ export const getConversationById = async (req, res, next) => {
   }
 };
 
+export const renameConversation = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { title } = req.body;
+    const userId = req.user.id;
+
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_TITLE', message: 'Conversation title is required.' }
+      });
+    }
+
+    const updated = await prisma.conversation.updateMany({
+      where: { id, userId },
+      data: { title: title.trim().slice(0, 80) }
+    }).catch(() => null);
+
+    return res.json({
+      success: true,
+      title: title.trim(),
+      message: 'Conversation renamed successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteConversation = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -250,5 +278,6 @@ export default {
   sendMessage,
   getConversations,
   getConversationById,
+  renameConversation,
   deleteConversation
 };

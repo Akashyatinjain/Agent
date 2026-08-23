@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Wrench, Globe, Calculator, CloudSun, ChevronDown, CheckCircle2 } from 'lucide-react';
+import {
+  CheckCircle2, ChevronDown, Wrench, Search,
+  Calculator, CloudSun, Check
+} from 'lucide-react';
 
 export const ToolCallDisplay = ({ toolCalls }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,22 +18,36 @@ export const ToolCallDisplay = ({ toolCalls }) => {
   
   if (!Array.isArray(tools) || tools.length === 0) return null;
 
+  const formatToolActivity = (t) => {
+    const name = t.tool?.toLowerCase();
+    if (name === 'weather') {
+      return `Checked weather forecast for ${t.location || 'requested location'}`;
+    }
+    if (name === 'calculator') {
+      return `Evaluated expression: ${t.expression || ''} ${t.result !== undefined ? `(= ${t.result})` : ''}`;
+    }
+    if (name === 'web_search') {
+      return `Searched web for recent information`;
+    }
+    return `Executed ${t.tool || 'tool'}`;
+  };
+
   const getToolIcon = (name) => {
     switch (name?.toLowerCase()) {
       case 'weather':
-        return <CloudSun className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--text-tertiary)' }} />;
+        return <CloudSun className="w-3.5 h-3.5 text-amber-500 shrink-0" />;
       case 'calculator':
-        return <Calculator className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--text-tertiary)' }} />;
+        return <Calculator className="w-3.5 h-3.5 text-rose-500 shrink-0" />;
       default:
-        return <Globe className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--text-tertiary)' }} />;
+        return <Search className="w-3.5 h-3.5 text-purple-500 shrink-0" />;
     }
   };
 
   return (
     <div
-      className="my-2 rounded-xl text-xs overflow-hidden"
+      className="my-2.5 rounded-xl text-xs overflow-hidden"
       style={{
-        backgroundColor: 'var(--bg-card)',
+        backgroundColor: 'var(--bg-secondary)',
         border: '1px solid var(--border-primary)'
       }}
     >
@@ -41,13 +58,18 @@ export const ToolCallDisplay = ({ toolCalls }) => {
         style={{ color: 'var(--text-secondary)' }}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <Wrench className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--text-tertiary)' }} />
-          <span className="truncate">Executed Live Tools ({tools.length})</span>
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+          <span className="truncate">Agent Activity ({tools.length} step{tools.length > 1 ? 's' : ''} completed)</span>
         </div>
-        <ChevronDown
-          className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          style={{ color: 'var(--text-muted)' }}
-        />
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[11px] font-normal" style={{ color: 'var(--text-muted)' }}>
+            {isOpen ? 'Hide details' : 'View steps'}
+          </span>
+          <ChevronDown
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--text-muted)' }}
+          />
+        </div>
       </button>
 
       {isOpen && (
@@ -58,42 +80,20 @@ export const ToolCallDisplay = ({ toolCalls }) => {
           {tools.map((t, i) => (
             <div
               key={i}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 p-2 rounded-lg"
+              className="flex items-center justify-between gap-2 p-2 rounded-lg"
               style={{
-                backgroundColor: 'var(--bg-secondary)',
-                border: '1px solid var(--border-secondary)',
-                color: 'var(--text-tertiary)'
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border-secondary)'
               }}
             >
               <div className="flex items-center gap-2 min-w-0">
                 {getToolIcon(t.tool)}
-                <span className="font-mono font-bold text-xs" style={{ color: 'var(--text-primary)' }}>
-                  {t.tool}
+                <span className="truncate text-xs font-medium" style={{ color: 'var(--text-primary)' }}>
+                  {formatToolActivity(t)}
                 </span>
-                {t.location && (
-                  <span className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
-                    ({t.location})
-                  </span>
-                )}
-                {t.expression && (
-                  <span className="text-[11px] font-mono truncate" style={{ color: 'var(--text-muted)' }}>
-                    [{t.expression}]
-                  </span>
-                )}
               </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                {t.result !== undefined && (
-                  <span className="font-bold text-xs font-mono" style={{ color: 'var(--text-primary)' }}>
-                    = {t.result}
-                  </span>
-                )}
-                {t.temperature && (
-                  <span className="font-bold text-xs" style={{ color: 'var(--text-primary)' }}>
-                    {t.temperature} ({t.condition || 'Clear'})
-                  </span>
-                )}
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <div className="flex items-center gap-1 text-[11px] text-emerald-500 font-semibold shrink-0">
+                <Check className="w-3 h-3" /> Done
               </div>
             </div>
           ))}

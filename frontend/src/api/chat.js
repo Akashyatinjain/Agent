@@ -10,6 +10,11 @@ export const fetchConversationByIdApi = async (id) => {
   return res.data;
 };
 
+export const renameConversationApi = async (id, title) => {
+  const res = await api.patch(`/chat/conversations/${id}`, { title });
+  return res.data;
+};
+
 export const deleteConversationApi = async (id) => {
   const res = await api.delete(`/chat/conversations/${id}`);
   return res.data;
@@ -84,6 +89,7 @@ export const sendMessageStreamApi = async (
 export default {
   fetchConversationsApi,
   fetchConversationByIdApi,
+  renameConversationApi,
   deleteConversationApi,
   sendMessageStreamApi
 };

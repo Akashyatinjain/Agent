@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Database, ChevronDown, FileText } from 'lucide-react';
+import { FileText, ChevronDown } from 'lucide-react';
 
 export const RagContextDisplay = ({ ragContext }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,9 +17,9 @@ export const RagContextDisplay = ({ ragContext }) => {
 
   return (
     <div
-      className="my-2 rounded-xl text-xs overflow-hidden"
+      className="my-2.5 rounded-xl text-xs overflow-hidden"
       style={{
-        backgroundColor: 'var(--bg-card)',
+        backgroundColor: 'var(--bg-secondary)',
         border: '1px solid var(--border-primary)'
       }}
     >
@@ -30,13 +30,18 @@ export const RagContextDisplay = ({ ragContext }) => {
         style={{ color: 'var(--text-secondary)' }}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <Database className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--text-tertiary)' }} />
-          <span className="truncate">Retrieved Knowledge Base Sources ({chunks.length})</span>
+          <FileText className="w-3.5 h-3.5 flex-shrink-0 text-blue-500" />
+          <span className="truncate">Sources ({chunks.length})</span>
         </div>
-        <ChevronDown
-          className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-          style={{ color: 'var(--text-muted)' }}
-        />
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[11px] font-normal" style={{ color: 'var(--text-muted)' }}>
+            {isOpen ? 'Hide sources' : 'View sources'}
+          </span>
+          <ChevronDown
+            className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--text-muted)' }}
+          />
+        </div>
       </button>
 
       {isOpen && (
@@ -44,35 +49,36 @@ export const RagContextDisplay = ({ ragContext }) => {
           className="p-2.5 pt-0 space-y-2"
           style={{ borderTop: '1px solid var(--border-secondary)' }}
         >
-          {chunks.map((chunk, i) => (
-            <div
-              key={chunk.id || i}
-              className="p-2.5 rounded-lg space-y-1.5"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                border: '1px solid var(--border-secondary)'
-              }}
-            >
-              <div className="flex items-center justify-between text-[11px] font-mono" style={{ color: 'var(--text-muted)' }}>
-                <span className="flex items-center gap-1.5 truncate max-w-[220px]">
-                  <FileText className="w-3 h-3 flex-shrink-0" style={{ color: 'var(--text-tertiary)' }} />
-                  <span className="truncate">{chunk.metadata?.filename || 'Document'}</span>
-                  {chunk.metadata?.chunkIndex !== undefined && (
-                    <span className="text-[10px] text-gray-500">#{chunk.metadata.chunkIndex + 1}</span>
-                  )}
-                </span>
-                <span className="font-bold shrink-0" style={{ color: 'var(--text-secondary)' }}>
-                  {typeof chunk.similarity === 'number' ? `${Math.round(chunk.similarity * 100)}% match` : 'Matched'}
-                </span>
-              </div>
-              <p
-                className="text-[11px] leading-relaxed line-clamp-3 break-words font-sans"
-                style={{ color: 'var(--text-tertiary)' }}
+          {chunks.map((chunk, i) => {
+            const filename = chunk.metadata?.filename || 'Document';
+            const pageInfo = chunk.metadata?.pageNumber ? ` • Page ${chunk.metadata.pageNumber}` : '';
+            const sectionInfo = chunk.metadata?.section ? ` • ${chunk.metadata.section}` : '';
+
+            return (
+              <div
+                key={chunk.id || i}
+                className="p-2.5 rounded-lg space-y-1"
+                style={{
+                  backgroundColor: 'var(--bg-card)',
+                  border: '1px solid var(--border-secondary)'
+                }}
               >
-                {chunk.content}
-              </p>
-            </div>
-          ))}
+                <div className="flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                  <FileText className="w-3.5 h-3.5 shrink-0 text-blue-400" />
+                  <span className="truncate">{filename}</span>
+                  <span className="text-[11px] font-normal" style={{ color: 'var(--text-muted)' }}>
+                    {pageInfo}{sectionInfo}
+                  </span>
+                </div>
+                <p
+                  className="text-[11px] leading-relaxed line-clamp-3 font-sans break-words pl-5"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  "{chunk.content}"
+                </p>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

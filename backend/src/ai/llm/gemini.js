@@ -3,6 +3,8 @@ import env from '../../config/env.js';
 import { generateSmartFallbackResponse } from './smartFallback.js';
 import logger from '../../shared/logger.js';
 
+let cachedWorkingModel = null;
+
 export const generateGeminiResponse = async ({
   prompt,
   systemPrompt,
@@ -16,12 +18,19 @@ export const generateGeminiResponse = async ({
     return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'Gemini' });
   }
 
-  // Live stable Google Gemini models in priority order
+  // Active Google Gemini models in priority order
   const modelsToTry = [
+    ...(cachedWorkingModel ? [cachedWorkingModel] : []),
+    'gemini-1.5-flash-latest',
+    'gemini-1.5-flash-8b',
     'gemini-1.5-flash',
-    'gemini-2.0-flash',
-    'gemini-1.5-pro'
-  ];
+    'gemini-2.0-flash-exp',
+    'gemini-2.5-flash',
+    'gemini-3.6-flash',
+    'gemini-1.5-pro-latest',
+    'gemini-1.5-pro',
+    'gemini-pro'
+  ].filter((v, i, a) => a.indexOf(v) === i);
 
   for (const modelName of modelsToTry) {
     try {
@@ -47,7 +56,7 @@ export const generateGeminiResponse = async ({
         }
       }
 
-      // If we have history, use startChat for genuine multi-turn conversational context
+      // If we have history, use startChat for multi-turn conversational context
       if (formattedHistory.length > 0) {
         const chat = model.startChat({
           history: formattedHistory
@@ -63,10 +72,13 @@ export const generateGeminiResponse = async ({
               onChunk(chunkText);
             }
           }
+          cachedWorkingModel = modelName;
           return completeText;
         } else {
           const result = await chat.sendMessage(prompt);
-          return result.response.text();
+          const text = result.response.text();
+          cachedWorkingModel = modelName;
+          return text;
         }
       } else {
         // Direct single-turn prompt
@@ -80,10 +92,13 @@ export const generateGeminiResponse = async ({
               onChunk(chunkText);
             }
           }
+          cachedWorkingModel = modelName;
           return completeText;
         } else {
           const result = await model.generateContent(prompt);
-          return result.response.text();
+          const text = result.response.text();
+          cachedWorkingModel = modelName;
+          return text;
         }
       }
     } catch (error) {

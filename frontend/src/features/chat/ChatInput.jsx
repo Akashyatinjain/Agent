@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { Send, Sparkles, Paperclip, FileText, X, Loader2, CheckCircle2, Square } from 'lucide-react';
-import ModelSelector from './ModelSelector';
+import {
+  Send, Sparkles, Paperclip, FileText, X,
+  Loader2, CheckCircle2, Square
+} from 'lucide-react';
+import AgentSelector from './AgentSelector';
 import useChatStore from '../../store/chatStore';
 import { uploadFileApi } from '../../api/files';
 
@@ -58,38 +61,38 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
     }
   };
 
-  const getRouterBadge = () => {
+  // Human-friendly, non-technical thinking status
+  const getThinkingLabel = () => {
     if (!activeRouterIntent) return null;
-    const label = {
-      rag: 'AI Router: Querying pgvector RAG Index',
-      tool: 'AI Router: Executing Real-time Tool API',
-      hybrid: 'AI Router: Synthesizing RAG + Live Tools',
-    }[activeRouterIntent.routerType] || 'AI Router: Direct Knowledge Synthesis';
-
-    return (
-      <div className="flex justify-center pb-1">
-        <div
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium animate-scale-in"
-          style={{
-            backgroundColor: 'var(--bg-secondary)',
-            color: 'var(--text-secondary)',
-            border: '1px solid var(--border-primary)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-        >
-          <Sparkles className="w-3.5 h-3.5 flex-shrink-0 animate-spin" style={{ color: 'var(--text-tertiary)' }} />
-          <span className="truncate">{label}</span>
-        </div>
-      </div>
-    );
+    const type = activeRouterIntent.routerType;
+    if (type === 'rag') return 'Searching your documents...';
+    if (type === 'tool') return 'Running analysis & tools...';
+    if (type === 'hybrid') return 'Reading sources and searching web...';
+    return 'Thinking & generating response...';
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto space-y-2">
-      {getRouterBadge()}
+    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto space-y-2 relative">
+      {/* Subtle, non-technical processing status */}
+      {isGenerating && activeRouterIntent && (
+        <div className="flex justify-center pb-1">
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium animate-fade-in"
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-primary)',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+          >
+            <Loader2 className="w-3.5 h-3.5 flex-shrink-0 animate-spin text-blue-500" />
+            <span className="truncate">{getThinkingLabel()}</span>
+          </div>
+        </div>
+      )}
 
       <div
-        className="relative rounded-2xl p-2 transition-all duration-200 theme-transition"
+        className="rounded-2xl p-2 transition-all duration-200 theme-transition relative"
         style={{
           backgroundColor: 'var(--bg-card)',
           border: '1px solid var(--border-primary)',
@@ -108,7 +111,7 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
             <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
             <span className="truncate max-w-[220px] font-semibold">{attachedFile.name}</span>
             <span className="text-[10px] text-emerald-500 font-semibold flex items-center gap-1 shrink-0">
-              <CheckCircle2 className="w-3 h-3" /> Indexed into RAG
+              <CheckCircle2 className="w-3 h-3" /> Ready
             </span>
             <button
               type="button"
@@ -130,7 +133,7 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
           placeholder={
             attachedFile
               ? `Ask anything about "${attachedFile.name}"...`
-              : "Ask MiniGPT anything, search web, query documents, or review your resume..."
+              : "Ask anything, search web, query your documents, or review your resume..."
           }
           disabled={disabled || isUploadingFile}
           className="w-full bg-transparent text-sm p-2.5 focus:outline-none resize-none"
@@ -141,11 +144,11 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
         />
 
         <div
-          className="flex items-center justify-between pt-2 px-2 gap-2"
+          className="flex items-center justify-between pt-2 px-2 gap-2 relative z-20"
           style={{ borderTop: '1px solid var(--border-secondary)' }}
         >
-          <div className="flex items-center gap-2 min-w-0 overflow-x-auto py-0.5">
-            <ModelSelector />
+          <div className="flex items-center gap-2 min-w-0 py-0.5 relative z-30">
+            <AgentSelector />
 
             <input
               type="file"
@@ -159,20 +162,20 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || isUploadingFile || isGenerating}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all duration-200 hover:scale-105 shrink-0 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 shrink-0 cursor-pointer hover:scale-105"
               style={{
                 backgroundColor: 'var(--bg-secondary)',
                 color: 'var(--text-secondary)',
                 border: '1px solid var(--border-primary)'
               }}
-              title="Upload and attach document for RAG analysis"
+              title="Attach document to conversation"
             >
               {isUploadingFile ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-500" />
               ) : (
                 <Paperclip className="w-3.5 h-3.5" />
               )}
-              <span>{isUploadingFile ? 'Indexing...' : 'Attach Document'}</span>
+              <span>{isUploadingFile ? 'Reading...' : 'Attach'}</span>
             </button>
           </div>
 

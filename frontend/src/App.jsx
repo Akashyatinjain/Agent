@@ -23,6 +23,7 @@ export const App = () => {
         <Route element={<AuthGuard />}>
           <Route element={<Layout />}>
             <Route path="/chat" element={<ChatPage />} />
+            <Route path="/chat/:conversationId" element={<ChatPage />} />
             <Route path="/files" element={<FilesPage />} />
             <Route path="/knowledge" element={<KnowledgePage />} />
             <Route path="/settings" element={<SettingsPage />} />

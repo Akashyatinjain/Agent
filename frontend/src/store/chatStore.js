@@ -1,11 +1,18 @@
 import { create } from 'zustand';
-import { fetchConversationsApi, fetchConversationByIdApi, deleteConversationApi } from '../api/chat';
+import {
+  fetchConversationsApi,
+  fetchConversationByIdApi,
+  renameConversationApi,
+  deleteConversationApi
+} from '../api/chat';
 
 export const useChatStore = create((set, get) => ({
   conversations: [],
   currentConversationId: null,
   messages: [],
   selectedModel: 'gemini',
+  selectedAgent: 'general',
+  searchQuery: '',
   isGenerating: false,
   isLoadingMessages: false,
   activeRouterIntent: null,
@@ -14,11 +21,23 @@ export const useChatStore = create((set, get) => ({
   setCurrentConversationId: (id) => set({ currentConversationId: id }),
   setMessages: (messages) => set({ messages }),
   setSelectedModel: (model) => set({ selectedModel: model }),
+  setSelectedAgent: (agent) => set({ selectedAgent: agent }),
+  setSearchQuery: (query) => set({ searchQuery: query }),
   setIsGenerating: (isGenerating) => set({ isGenerating }),
   setIsLoadingMessages: (isLoadingMessages) => set({ isLoadingMessages }),
   setActiveRouterIntent: (intent) => set({ activeRouterIntent: intent }),
 
   addMessage: (message) => set((state) => ({ messages: [...state.messages, message] })),
+
+  startNewChat: () => {
+    set({
+      currentConversationId: null,
+      messages: [],
+      activeRouterIntent: null,
+      isGenerating: false,
+      isLoadingMessages: false
+    });
+  },
 
   fetchConversations: async () => {
     try {
@@ -33,7 +52,7 @@ export const useChatStore = create((set, get) => ({
 
   loadConversation: async (id) => {
     if (!id) {
-      set({ currentConversationId: null, messages: [] });
+      get().startNewChat();
       return;
     }
 
@@ -41,12 +60,33 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await fetchConversationByIdApi(id);
       if (res.success && res.conversation) {
-        set({ messages: res.conversation.messages || [] });
+        set({
+          messages: res.conversation.messages || [],
+          selectedModel: res.conversation.model || get().selectedModel
+        });
       }
     } catch (err) {
       console.warn('Failed to load conversation:', err.message);
     } finally {
       set({ isLoadingMessages: false });
+    }
+  },
+
+  renameConversation: async (id, newTitle) => {
+    if (!id || !newTitle?.trim()) return;
+    const clean = newTitle.trim();
+    // Optimistic UI update
+    set((state) => ({
+      conversations: state.conversations.map((c) =>
+        c.id === id ? { ...c, title: clean } : c
+      )
+    }));
+
+    try {
+      await renameConversationApi(id, clean);
+    } catch (err) {
+      console.warn('Failed to rename conversation on server:', err.message);
+      get().fetchConversations();
     }
   },
 
@@ -56,7 +96,7 @@ export const useChatStore = create((set, get) => ({
       const conversations = get().conversations.filter((c) => c.id !== id);
       set({ conversations });
       if (get().currentConversationId === id) {
-        set({ currentConversationId: null, messages: [] });
+        get().startNewChat();
       }
     } catch (err) {
       console.warn('Failed to delete conversation:', err.message);
@@ -87,4 +127,3 @@ export const useChatStore = create((set, get) => ({
 }));
 
 export default useChatStore;
-

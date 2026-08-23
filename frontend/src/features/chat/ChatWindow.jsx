@@ -1,11 +1,16 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import useChatStore from '../../store/chatStore';
+import useUIStore from '../../store/uiStore';
 import { sendMessageStreamApi } from '../../api/chat';
 import { getFilesApi } from '../../api/files';
-import { Sparkles, Brain, Database, Wrench, Loader2, ArrowDown, FileText, CheckCircle2, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import {
+  Sparkles, Loader2, ArrowDown,
+  FileText, Menu, Plus, Compass, Code, Search
+} from 'lucide-react';
+import { AGENTS } from './AgentSelector';
 
 export const ChatWindow = () => {
   const {
@@ -15,15 +20,21 @@ export const ChatWindow = () => {
     currentConversationId,
     setCurrentConversationId,
     selectedModel,
+    selectedAgent,
+    setSelectedAgent,
     isGenerating,
     setIsGenerating,
     isLoadingMessages,
     setActiveRouterIntent,
-    fetchConversations
+    fetchConversations,
+    startNewChat
   } = useChatStore();
 
+  const { toggleSidebar } = useUIStore();
+  const navigate = useNavigate();
+
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [activeSelectedDoc, setActiveSelectedDoc] = useState(null);
+  const [activeSelectedDoc, setActiveSelectedDoc] = useState(null); // Never auto-select!
   const messagesEndRef = useRef(null);
   const activeConversationIdRef = useRef(currentConversationId);
   const abortControllerRef = useRef(null);
@@ -35,9 +46,7 @@ export const ChatWindow = () => {
       const res = await getFilesApi();
       if (res.success && Array.isArray(res.files)) {
         setUploadedFiles(res.files);
-        if (res.files.length > 0 && !activeSelectedDoc) {
-          setActiveSelectedDoc(res.files[0]);
-        }
+        // Note: Do NOT auto-select files; user must explicitly choose or attach
       }
     } catch (e) {}
   };
@@ -65,9 +74,20 @@ export const ChatWindow = () => {
     setShowScrollBottom(!isNearBottom);
   };
 
+  const handleNewChatClick = () => {
+    startNewChat();
+    setActiveSelectedDoc(null);
+    navigate('/chat');
+  };
+
+  const handleToggleDocTarget = (file) => {
+    setActiveSelectedDoc((prev) => (prev?.id === file.id ? null : file));
+  };
+
   const handleSendMessage = async (text, attachedFile = null) => {
     if (!text || isGenerating) return;
 
+    // Only attach if user explicitly passed a file or toggled a document
     const fileToAttach = attachedFile || activeSelectedDoc || null;
 
     const userMsg = {
@@ -105,6 +125,9 @@ export const ChatWindow = () => {
           if (eventName === 'metadata' && data?.conversationId) {
             activeConversationIdRef.current = data.conversationId;
             setCurrentConversationId(data.conversationId);
+            if (window.location.pathname !== `/chat/${data.conversationId}`) {
+              window.history.replaceState(null, '', `/chat/${data.conversationId}`);
+            }
           } else if (eventName === 'router_intent') {
             setActiveRouterIntent(data);
           } else if (eventName === 'token' && data?.chunk) {
@@ -142,96 +165,152 @@ export const ChatWindow = () => {
     }
   };
 
-  const promptStarters = useMemo(() => [
+  const currentAgentObj = AGENTS.find((a) => a.id === (selectedAgent || 'auto')) || AGENTS[0];
+
+  // Clean prompt cards
+  const promptCategories = useMemo(() => [
     {
-      title: 'Analyze Document',
+      icon: FileText,
+      tag: 'Documents',
+      title: uploadedFiles.length > 0 ? `Analyze ${uploadedFiles[0].name.slice(0, 24)}...` : 'Analyze uploaded document',
+      desc: 'Extract key insights, certifications, and details from your files',
       prompt: uploadedFiles.length > 0
-        ? `Review and extract the key details from ${uploadedFiles[0].name}`
-        : 'Analyze and review my uploaded document in detail',
-      icon: '📄'
+        ? `Review and extract key details from ${uploadedFiles[0].name}`
+        : 'Analyze and review my uploaded document in detail'
     },
     {
-      title: 'Resume Review',
-      prompt: 'Review my resume: highlight key strengths, gaps, and suggested improvements',
-      icon: '💼'
+      icon: Compass,
+      tag: 'Resume & Profile',
+      title: 'Review my resume',
+      desc: 'Get structured feedback on strengths, gaps, and improvements',
+      prompt: 'Review my resume: highlight key strengths, gaps, and suggested improvements'
     },
     {
-      title: 'Real-time Weather',
-      prompt: 'What is the current weather in Tokyo and forecast for this week?',
-      icon: '🌤️'
+      icon: Search,
+      tag: 'Research',
+      title: 'Real-time weather & web',
+      desc: 'Query live forecasts, temperatures, and current web facts',
+      prompt: 'What is the current weather in Tokyo and forecast for this week?'
     },
     {
-      title: 'Math Calculation',
-      prompt: 'Calculate 1450 * 12 - (3400 / 4) + 18% of 2500',
-      icon: '🔢'
+      icon: Code,
+      tag: 'Coding & Logic',
+      title: 'Calculate & logic evaluation',
+      desc: 'Evaluate expressions and structure data seamlessly',
+      prompt: 'Calculate 1450 * 12 - (3400 / 4) + 18% of 2500'
     }
   ], [uploadedFiles]);
-
-  const featureCards = useMemo(() => [
-    {
-      icon: Brain,
-      title: 'AI Intent Router',
-      desc: 'Intelligently classifies intent to choose LLM, pgvector RAG, or Live Tool APIs.'
-    },
-    {
-      icon: Database,
-      title: 'pgvector RAG',
-      desc: 'Instant semantic retrieval across your uploaded notes, resumes & documents.'
-    },
-    {
-      icon: Wrench,
-      title: 'Live API Tools',
-      desc: 'Calculates math expressions, checks live weather, and searches the web.'
-    }
-  ], []);
 
   return (
     <div
       className="flex flex-col h-full w-full relative theme-transition min-h-0"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
-      {/* Uploaded Documents Indicator Bar */}
+      {/* Sleek Top Navigation Header */}
+      <header
+        className="px-3.5 sm:px-6 py-2.5 flex items-center justify-between gap-3 shrink-0 z-10"
+        style={{
+          borderBottom: '1px solid var(--border-primary)',
+          backgroundColor: 'var(--bg-primary)'
+        }}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            className="p-1.5 rounded-lg transition-colors lg:hidden cursor-pointer"
+            style={{ color: 'var(--text-tertiary)' }}
+            aria-label="Open sidebar"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-bold text-sm tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              MiniGPT
+            </span>
+            <span
+              className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                color: 'var(--text-tertiary)',
+                border: '1px solid var(--border-secondary)'
+              }}
+            >
+              <currentAgentObj.icon className={`w-3 h-3 ${currentAgentObj.color}`} />
+              <span>{currentAgentObj.name}</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {uploadedFiles.length > 0 && (
+            <Link
+              to="/files"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
+              style={{
+                backgroundColor: 'var(--bg-secondary)',
+                border: '1px solid var(--border-primary)',
+                color: 'var(--text-secondary)'
+              }}
+              title="View all uploaded documents"
+            >
+              <FileText className="w-3.5 h-3.5 text-blue-500" />
+              <span className="hidden sm:inline">{uploadedFiles.length} doc{uploadedFiles.length > 1 ? 's' : ''}</span>
+            </Link>
+          )}
+
+          <button
+            type="button"
+            onClick={handleNewChatClick}
+            className="p-1.5 rounded-lg transition-colors cursor-pointer"
+            style={{ color: 'var(--text-tertiary)' }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}
+            title="New Chat"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+      </header>
+
+      {/* Available Documents Bar (Only if user has uploaded docs; clickable to toggle targeting) */}
       {uploadedFiles.length > 0 && (
         <div
-          className="px-3 sm:px-6 py-2 flex items-center justify-between gap-2 text-xs shrink-0 overflow-x-auto"
+          className="px-3.5 sm:px-6 py-1.5 flex items-center justify-between gap-2 text-xs shrink-0 overflow-x-auto"
           style={{
             backgroundColor: 'var(--bg-secondary)',
-            borderBottom: '1px solid var(--border-primary)'
+            borderBottom: '1px solid var(--border-secondary)'
           }}
         >
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-semibold flex items-center gap-1.5 shrink-0" style={{ color: 'var(--text-secondary)' }}>
-              <Database className="w-3.5 h-3.5 text-emerald-500" /> Active RAG Documents:
+            <span className="text-[11px] font-semibold flex items-center gap-1 shrink-0" style={{ color: 'var(--text-muted)' }}>
+              Target Document:
             </span>
             <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
-              {uploadedFiles.slice(0, 3).map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => setActiveSelectedDoc(f)}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-medium text-[11px] transition-all shrink-0 cursor-pointer"
-                  style={{
-                    backgroundColor: activeSelectedDoc?.id === f.id ? 'var(--bg-accent)' : 'var(--bg-card)',
-                    color: activeSelectedDoc?.id === f.id ? 'var(--text-on-accent)' : 'var(--text-primary)',
-                    border: '1px solid var(--border-primary)'
-                  }}
-                  title={`Click to target "${f.name}"`}
-                >
-                  <FileText className="w-3 h-3 shrink-0 text-blue-400" />
-                  <span className="truncate max-w-[140px] sm:max-w-[200px]">{f.name}</span>
-                  <span className="text-[10px] opacity-75">({f.chunkCount || 0} chunks)</span>
-                </button>
-              ))}
+              {uploadedFiles.slice(0, 3).map((f) => {
+                const isTargeted = activeSelectedDoc?.id === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => handleToggleDocTarget(f)}
+                    className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md font-medium text-[11px] transition-all shrink-0 cursor-pointer"
+                    style={{
+                      backgroundColor: isTargeted ? 'var(--bg-accent)' : 'var(--bg-card)',
+                      color: isTargeted ? 'var(--text-on-accent)' : 'var(--text-primary)',
+                      border: '1px solid var(--border-primary)'
+                    }}
+                    title={isTargeted ? `Targeting ${f.name} (Click to unselect)` : `Click to target ${f.name}`}
+                  >
+                    <FileText className="w-3 h-3 shrink-0 text-blue-400" />
+                    <span className="truncate max-w-[130px] sm:max-w-[180px]">{f.name}</span>
+                    {isTargeted && <span className="text-[10px] ml-0.5 opacity-80">✓</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
-
-          <Link
-            to="/files"
-            className="flex items-center gap-1 text-[11px] font-semibold transition-colors shrink-0 hover:underline"
-            style={{ color: 'var(--text-primary)' }}
-          >
-            Manage Files <ChevronRight className="w-3 h-3" />
-          </Link>
         </div>
       )}
 
@@ -243,121 +322,60 @@ export const ChatWindow = () => {
       >
         {isLoadingMessages ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-3 animate-fade-in my-auto">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--text-secondary)' }} />
+            <Loader2 className="w-7 h-7 animate-spin" style={{ color: 'var(--text-secondary)' }} />
             <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
-              Loading conversation history...
+              Loading conversation...
             </p>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-full text-center space-y-4 sm:space-y-6 max-w-2xl mx-auto py-4 sm:py-8 px-2 animate-fade-in my-auto">
-            <div
-              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center animate-float shrink-0"
-              style={{
-                backgroundColor: 'var(--bg-secondary)',
-                color: 'var(--text-primary)',
-                border: '1px solid var(--border-primary)',
-                boxShadow: 'var(--shadow-md)'
-              }}
-            >
-              <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
-            </div>
-
-            <div className="space-y-1 sm:space-y-1.5">
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                MiniGPT AI Assistant
+          <div className="flex flex-col items-center justify-center min-h-full text-center space-y-5 sm:space-y-6 max-w-2xl mx-auto py-4 sm:py-8 px-2 animate-fade-in my-auto">
+            {/* Header Greeting */}
+            <div className="space-y-2">
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto shadow-xs"
+                style={{
+                  backgroundColor: 'var(--bg-accent)',
+                  color: 'var(--text-on-accent)'
+                }}
+              >
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                What can I help with today?
               </h2>
               <p className="text-xs sm:text-sm max-w-md mx-auto" style={{ color: 'var(--text-tertiary)' }}>
-                Ask anything, run real-time tools, or query your uploaded documents with intelligent routing.
+                Ask questions, search through your documents, or run live tools naturally.
               </p>
             </div>
 
-            {/* Active Document Card if user has uploaded a file */}
-            {uploadedFiles.length > 0 && (
-              <div
-                className="p-3.5 rounded-2xl w-full flex items-center justify-between gap-3 text-left animate-scale-in"
-                style={{
-                  backgroundColor: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-primary)',
-                  boxShadow: 'var(--shadow-sm)'
-                }}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
-                    <FileText className="w-4 h-4 text-blue-500" />
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>
-                      {uploadedFiles[0].name}
-                    </span>
-                    <span className="text-[11px] text-emerald-500 font-semibold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Indexed into pgvector RAG ({uploadedFiles[0].chunkCount || 0} chunks ready)
-                    </span>
-                  </div>
-                </div>
-
+            {/* Prompt Suggestion Cards (GPT Style) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left pt-2">
+              {promptCategories.map((card) => (
                 <button
-                  type="button"
-                  onClick={() => handleSendMessage(`Analyze and summarize all key points from ${uploadedFiles[0].name}`, uploadedFiles[0])}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition-all shrink-0 hover:scale-105 cursor-pointer"
-                  style={{
-                    backgroundColor: 'var(--bg-accent)',
-                    color: 'var(--text-on-accent)'
-                  }}
-                >
-                  Analyze File
-                </button>
-              </div>
-            )}
-
-            {/* Feature Badges */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 w-full">
-              {featureCards.map((card, i) => (
-                <div
                   key={card.title}
-                  className="p-3 sm:p-3.5 rounded-xl text-left space-y-1 transition-all duration-200"
+                  type="button"
+                  onClick={() => handleSendMessage(card.prompt, null)}
+                  className="p-3.5 rounded-2xl text-left space-y-1.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] group cursor-pointer"
                   style={{
-                    backgroundColor: 'var(--bg-secondary)',
+                    backgroundColor: 'var(--bg-card)',
                     border: '1px solid var(--border-primary)',
+                    boxShadow: 'var(--shadow-sm)'
                   }}
                 >
-                  <div className="flex items-center gap-2">
-                    <card.icon className="w-4 h-4 shrink-0" style={{ color: 'var(--text-secondary)' }} />
-                    <span className="font-semibold text-xs" style={{ color: 'var(--text-primary)' }}>
-                      {card.title}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">
+                      {card.tag}
                     </span>
+                    <card.icon className="w-3.5 h-3.5" style={{ color: 'var(--text-muted)' }} />
                   </div>
-                  <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                  <h3 className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+                    {card.title}
+                  </h3>
+                  <p className="text-[11px] leading-relaxed line-clamp-2" style={{ color: 'var(--text-tertiary)' }}>
                     {card.desc}
                   </p>
-                </div>
+                </button>
               ))}
-            </div>
-
-            {/* Prompt Starters */}
-            <div className="w-full pt-2">
-              <span className="text-[11px] font-semibold tracking-wider uppercase block mb-2" style={{ color: 'var(--text-muted)' }}>
-                Suggested Questions
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
-                {promptStarters.map((starter) => (
-                  <button
-                    key={starter.title}
-                    onClick={() => handleSendMessage(starter.prompt, uploadedFiles[0] || null)}
-                    className="p-2.5 rounded-xl text-xs flex items-center justify-between gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] text-left group cursor-pointer"
-                    style={{
-                      backgroundColor: 'var(--bg-card)',
-                      border: '1px solid var(--border-primary)',
-                      color: 'var(--text-secondary)'
-                    }}
-                  >
-                    <span className="truncate flex items-center gap-2">
-                      <span>{starter.icon}</span>
-                      <span className="font-medium" style={{ color: 'var(--text-primary)' }}>{starter.title}:</span>
-                      <span className="truncate" style={{ color: 'var(--text-tertiary)' }}>{starter.prompt}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
         ) : (
@@ -398,7 +416,7 @@ export const ChatWindow = () => {
         </button>
       )}
 
-      {/* Message Composer */}
+      {/* Sticky Message Composer */}
       <div
         className="p-2 sm:p-4 md:p-6 theme-transition shrink-0"
         style={{
