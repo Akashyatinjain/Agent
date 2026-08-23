@@ -100,19 +100,22 @@ app.use(errorHandler);
 
 const PORT = env.PORT || 5000;
 
-const server = app.listen(PORT, () => {
-  logger.info('Server', `🚀 MiniGPT API Server running on port ${PORT}`);
-  logger.info('Server', `📡 Health Check: http://localhost:${PORT}/api/health`);
-  logger.info('Server', `📋 Mode: ${env.NODE_ENV} | Client: ${env.CLIENT_URL || 'Local'}`);
-});
+// Only listen on port in standalone Node runtime (not in Vercel Serverless environment or testing)
+if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'test') {
+  const server = app.listen(PORT, () => {
+    logger.info('Server', `🚀 MiniGPT API Server running on port ${PORT}`);
+    logger.info('Server', `📡 Health Check: http://localhost:${PORT}/api/health`);
+    logger.info('Server', `📋 Mode: ${env.NODE_ENV} | Client: ${env.CLIENT_URL || 'Local'}`);
+  });
 
-server.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    logger.error('Server', `⚠️ Port ${PORT} is already in use! Kill old node process with taskkill /F /IM node.exe`);
-    process.exit(1);
-  } else {
-    logger.error('Server', 'Server startup error:', { error: err.message });
-  }
-});
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      logger.error('Server', `⚠️ Port ${PORT} is already in use! Kill old node process with taskkill /F /IM node.exe`);
+      process.exit(1);
+    } else {
+      logger.error('Server', 'Server startup error:', { error: err.message });
+    }
+  });
+}
 
 export default app;

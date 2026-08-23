@@ -9,6 +9,7 @@
     "dev:backend": "npm --prefix backend run dev",
     "dev:frontend": "npm --prefix frontend run dev",
     "build": "cd backend && npm install && npx prisma@5.16.0 generate --schema=prisma/schema.prisma",
+    "build:vercel": "npx prisma generate --schema=backend/prisma/schema.prisma && npm --prefix frontend run build",
     "start": "cd backend && node src/index.js",
     "build:frontend": "cd frontend && npm install && npm run build",
     "db:generate": "cd backend && npx prisma@5.16.0 generate --schema=prisma/schema.prisma"
