@@ -16,7 +16,7 @@ export const MODEL_PROVIDERS = {
 };
 
 export const DEFAULT_MODELS = {
-  GEMINI: 'gemini-3.6-flash',
+  GEMINI: 'gemini-1.5-flash',
   OPENAI: 'gpt-4o-mini',
   MISTRAL: 'mistral-small-latest'
 };

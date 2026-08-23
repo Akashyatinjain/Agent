@@ -1,51 +1,65 @@
 import env from '../../config/env.js';
 import { generateSmartFallbackResponse } from './smartFallback.js';
+import logger from '../../shared/logger.js';
 
-export const generateMistralResponse = async ({ prompt, systemPrompt, history = [], onChunk = null }) => {
+export const generateMistralResponse = async ({
+  prompt,
+  systemPrompt,
+  history = [],
+  onChunk = null
+}) => {
   const apiKey = env.MISTRAL_API_KEY || process.env.MISTRAL_API_KEY;
 
   if (!apiKey || apiKey.trim() === '') {
-    console.warn('⚠️ MISTRAL_API_KEY is missing. Using Smart Assistant mode.');
+    logger.warn('MistralLLM', 'MISTRAL_API_KEY missing. Using Smart Assistant fallback.');
     return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'Mistral' });
   }
 
   const modelsToTry = [
     'mistral-small-latest',
     'mistral-medium-latest',
-    'mistral-large-latest',
     'open-mistral-7b'
   ];
 
   const messages = [];
-  if (systemPrompt) {
+  if (systemPrompt && systemPrompt.trim().length > 0) {
     messages.push({ role: 'system', content: systemPrompt });
   }
 
-  history.forEach((msg) => {
-    messages.push({ role: msg.role, content: msg.content });
-  });
+  if (Array.isArray(history)) {
+    for (const msg of history) {
+      if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'system') {
+        messages.push({ role: msg.role, content: msg.content || '' });
+      }
+    }
+  }
 
   messages.push({ role: 'user', content: prompt });
 
   for (const modelName of modelsToTry) {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000);
+
       const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          Accept: 'application/json',
+          Authorization: `Bearer ${apiKey}`
         },
         body: JSON.stringify({
           model: modelName,
           messages,
           stream: Boolean(onChunk)
-        })
+        }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        const errorText = await response.text();
-        console.warn(`⚠️ Mistral API call for model ${modelName} returned status ${response.status}: ${errorText.substring(0, 100)}`);
+        logger.warn('MistralLLM', `Mistral API returned status ${response.status} for model ${modelName}`);
         continue;
       }
 
@@ -74,9 +88,7 @@ export const generateMistralResponse = async ({ prompt, systemPrompt, history = 
                   completeText += content;
                   onChunk(content);
                 }
-              } catch (e) {
-                // Ignore parse errors on partial chunks
-              }
+              } catch (e) {}
             }
           }
         }
@@ -87,18 +99,18 @@ export const generateMistralResponse = async ({ prompt, systemPrompt, history = 
       } else {
         const data = await response.json();
         const content = data.choices?.[0]?.message?.content || '';
-        if (content && content.trim().length > 0) {
+        if (content) {
           if (onChunk) onChunk(content);
           return content;
         }
       }
     } catch (error) {
-      console.warn(`⚠️ Mistral model ${modelName} request failed: ${error.message}`);
+      logger.warn('MistralLLM', `Mistral model ${modelName} error:`, { error: error.message });
     }
   }
 
-  console.warn('⚠️ All Mistral models failed. Using Smart Assistant mode.');
-  return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'Mistral (Live API Fallback)' });
+  logger.warn('MistralLLM', 'All Mistral models failed. Using Smart Assistant fallback.');
+  return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'Mistral (Fallback)' });
 };
 
 export default generateMistralResponse;

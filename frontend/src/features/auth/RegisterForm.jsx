@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, Sparkles, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Lock, Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { registerApi } from '../../api/auth';
@@ -17,19 +17,28 @@ export const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      setError('Please fill in all fields.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
     setError('');
     setLoading(true);
 
     try {
-      const data = await registerApi(name, email, password);
-      if (data.success) {
+      const data = await registerApi(name.trim(), email.trim(), password);
+      if (data.success && data.token) {
         setAuth(data.user, data.token);
         navigate('/chat');
       } else {
-        setError(data.error || 'Registration failed');
+        setError(data.error?.message || data.error || 'Registration failed');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to connect to server');
+      setError(err.response?.data?.error?.message || err.response?.data?.error || err.message || 'Failed to create account');
     } finally {
       setLoading(false);
     }
@@ -37,22 +46,45 @@ export const RegisterForm = () => {
 
   return (
     <div className="w-full max-w-md space-y-6">
-      <div className="glass-panel p-8 rounded-3xl border border-white/10 space-y-6 shadow-2xl relative overflow-hidden backdrop-blur-xl">
-        {/* Glow accent */}
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-white/5 rounded-full blur-2xl pointer-events-none" />
-
+      <div
+        className="p-6 sm:p-8 rounded-3xl space-y-6 transition-all duration-300"
+        style={{
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid var(--border-primary)',
+          boxShadow: 'var(--shadow-xl)'
+        }}
+      >
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center text-white mx-auto shadow-xl shadow-slate-900/40 ring-1 ring-white/10">
-            <Sparkles className="w-7 h-7 text-gray-200" />
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto transition-transform hover:scale-110"
+            style={{
+              backgroundColor: 'var(--bg-accent)',
+              color: 'var(--text-on-accent)',
+              boxShadow: 'var(--shadow-md)'
+            }}
+          >
+            <Sparkles className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Create Account</h2>
-          <p className="text-xs text-gray-400">Join your personal MiniGPT AI workspace</p>
+          <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            Create Account
+          </h2>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            Join your personal MiniGPT AI workspace
+          </p>
         </div>
 
         {error && (
-          <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-200 text-xs font-medium text-center">
-            {error}
+          <div
+            className="p-3 rounded-xl flex items-center gap-2 text-xs font-medium"
+            style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              color: '#ef4444'
+            }}
+          >
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span className="break-words">{error}</span>
           </div>
         )}
 
@@ -61,7 +93,7 @@ export const RegisterForm = () => {
             label="Full Name"
             type="text"
             icon={User}
-            placeholder="Akash Sharma"
+            placeholder="Alex Johnson"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -85,23 +117,29 @@ export const RegisterForm = () => {
             required
           />
 
-          <div className="space-y-1.5 pt-1 text-xs text-gray-400">
-            <div className="flex items-center gap-1.5 text-gray-300 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5 text-gray-300" /> Free Access to Gemini & OpenAI Router
+          <div className="space-y-1.5 pt-1 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+            <div className="flex items-center gap-1.5 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Multi-Provider LLM Router (Gemini + OpenAI + Mistral)
             </div>
-            <div className="flex items-center gap-1.5 text-gray-300 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5 text-gray-300" /> Vector Document Storage & Search
+            <div className="flex items-center gap-1.5 font-medium">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> pgvector RAG Document Storage & Semantic Search
             </div>
           </div>
 
-          <Button type="submit" variant="primary" className="w-full py-3 font-bold text-sm shadow-slate-900/20 shadow-xl" disabled={loading}>
+          <Button type="submit" variant="primary" className="w-full py-3 font-bold text-sm" disabled={loading}>
             {loading ? 'Creating Account...' : 'Get Started Now'}
           </Button>
         </form>
 
-        <div className="pt-4 border-t border-gray-800 text-center text-xs text-gray-400">
+        <div
+          className="pt-4 text-center text-xs"
+          style={{
+            borderTop: '1px solid var(--border-secondary)',
+            color: 'var(--text-muted)'
+          }}
+        >
           Already have an account?{' '}
-          <Link to="/login" className="text-gray-200 font-bold hover:underline">
+          <Link to="/login" className="font-bold underline" style={{ color: 'var(--text-primary)' }}>
             Sign In here
           </Link>
         </div>

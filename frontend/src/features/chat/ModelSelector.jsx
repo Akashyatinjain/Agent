@@ -3,13 +3,13 @@ import { Cpu, Sparkles, Zap } from 'lucide-react';
 import useChatStore from '../../store/chatStore';
 
 const models = [
-  { id: 'gemini', label: 'Gemini 3.6', shortLabel: 'Gemini', icon: Sparkles },
-  { id: 'openai', label: 'GPT-4o', shortLabel: 'GPT-4o', icon: Cpu },
+  { id: 'gemini', label: 'Gemini Flash', shortLabel: 'Gemini', icon: Sparkles },
+  { id: 'openai', label: 'GPT-4o Mini', shortLabel: 'GPT-4o', icon: Cpu },
   { id: 'mistral', label: 'Mistral AI', shortLabel: 'Mistral', icon: Zap },
 ];
 
 export const ModelSelector = () => {
-  const { selectedModel, setSelectedModel } = useChatStore();
+  const { selectedModel, setSelectedModel, isGenerating } = useChatStore();
 
   return (
     <div
@@ -25,8 +25,9 @@ export const ModelSelector = () => {
           <button
             key={m.id}
             type="button"
+            disabled={isGenerating}
             onClick={() => setSelectedModel(m.id)}
-            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-semibold transition-all duration-200 shrink-0"
+            className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all duration-200 shrink-0 disabled:opacity-60"
             style={{
               backgroundColor: isActive ? 'var(--bg-accent)' : 'transparent',
               color: isActive ? 'var(--text-on-accent)' : 'var(--text-tertiary)',

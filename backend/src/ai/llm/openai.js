@@ -1,12 +1,18 @@
 import OpenAI from 'openai';
 import env from '../../config/env.js';
 import { generateSmartFallbackResponse } from './smartFallback.js';
+import logger from '../../shared/logger.js';
 
-export const generateOpenAIResponse = async ({ prompt, systemPrompt, history = [], onChunk = null }) => {
+export const generateOpenAIResponse = async ({
+  prompt,
+  systemPrompt,
+  history = [],
+  onChunk = null
+}) => {
   const apiKey = env.OPENAI_API_KEY || process.env.OPENAI_API_KEY;
 
   if (!apiKey || apiKey.trim() === '') {
-    console.warn('⚠️ OPENAI_API_KEY is missing. Using Smart Assistant mode.');
+    logger.warn('OpenAILLM', 'OPENAI_API_KEY missing. Using Smart Assistant fallback.');
     return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'OpenAI' });
   }
 
@@ -16,13 +22,18 @@ export const generateOpenAIResponse = async ({ prompt, systemPrompt, history = [
     try {
       const openai = new OpenAI({ apiKey });
       const messages = [];
-      if (systemPrompt) {
+
+      if (systemPrompt && systemPrompt.trim().length > 0) {
         messages.push({ role: 'system', content: systemPrompt });
       }
 
-      history.forEach((msg) => {
-        messages.push({ role: msg.role, content: msg.content });
-      });
+      if (Array.isArray(history)) {
+        for (const msg of history) {
+          if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'system') {
+            messages.push({ role: msg.role, content: msg.content || '' });
+          }
+        }
+      }
 
       messages.push({ role: 'user', content: prompt });
 
@@ -31,6 +42,7 @@ export const generateOpenAIResponse = async ({ prompt, systemPrompt, history = [
           model: modelName,
           messages,
           stream: true,
+          temperature: 0.7
         });
 
         let completeText = '';
@@ -46,20 +58,21 @@ export const generateOpenAIResponse = async ({ prompt, systemPrompt, history = [
         const completion = await openai.chat.completions.create({
           model: modelName,
           messages,
+          temperature: 0.7
         });
         return completion.choices[0]?.message?.content || '';
       }
     } catch (error) {
-      console.warn(`⚠️ OpenAI model ${modelName} call failed:`, error.message.substring(0, 100));
-      if (error.status === 429 || error.code === 'insufficient_quota' || error.code === 'credit_balance_exhausted') {
-        const msg = `⚠️ **OpenAI Quota Exceeded**: The OpenAI API key has no remaining billing credits. Please top up credits at platform.openai.com or switch to the Gemini or Mistral model.`;
+      logger.warn('OpenAILLM', `OpenAI model ${modelName} request failed:`, { error: error.message });
+      if (error.status === 429 || error.code === 'insufficient_quota') {
+        const msg = `⚠️ **OpenAI Quota Limit**: Your OpenAI API account has reached its billing credit limit. Switch to Gemini or Mistral in the top-right model selector for uninterrupted responses.`;
         if (onChunk) onChunk(msg);
         return msg;
       }
     }
   }
 
-  console.warn('⚠️ OpenAI models failed. Falling back to Smart Assistant mode.');
+  logger.warn('OpenAILLM', 'OpenAI models failed. Using Smart Assistant fallback.');
   return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'OpenAI (Fallback)' });
 };
 

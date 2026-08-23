@@ -17,9 +17,11 @@ export const fetchFilesApi = async () => {
   return res.data;
 };
 
+export const getFilesApi = fetchFilesApi;
+
 export const deleteFileApi = async (id) => {
   const res = await api.delete(`/files/${id}`);
   return res.data;
 };
 
-export default { uploadFileApi, fetchFilesApi, deleteFileApi };
+export default { uploadFileApi, fetchFilesApi, getFilesApi, deleteFileApi };

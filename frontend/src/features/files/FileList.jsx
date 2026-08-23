@@ -8,28 +8,28 @@ export const FileList = ({ files = [], onDeleteSuccess }) => {
       await deleteFileApi(id);
       if (onDeleteSuccess) onDeleteSuccess(id);
     } catch (e) {
-      alert('Failed to delete file');
+      alert('Failed to delete file from storage.');
     }
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case 'completed':
         return (
-          <span className="flex items-center gap-1 font-medium text-[11px]" style={{ color: 'var(--text-secondary)' }}>
-            <CheckCircle2 className="w-3.5 h-3.5" style={{ color: 'var(--text-tertiary)' }} /> Indexed
+          <span className="flex items-center gap-1 font-semibold text-xs text-emerald-500">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Indexed into RAG
           </span>
         );
       case 'failed':
         return (
-          <span className="flex items-center gap-1 font-medium text-[11px]" style={{ color: '#ef4444' }}>
+          <span className="flex items-center gap-1 font-semibold text-xs text-red-500">
             <AlertTriangle className="w-3.5 h-3.5" /> Failed
           </span>
         );
       default:
         return (
-          <span className="flex items-center gap-1 font-medium text-[11px] animate-pulse" style={{ color: 'var(--text-muted)' }}>
-            <Clock className="w-3.5 h-3.5" /> Processing
+          <span className="flex items-center gap-1 font-semibold text-xs text-amber-500 animate-pulse">
+            <Clock className="w-3.5 h-3.5" /> Embedding
           </span>
         );
     }
@@ -38,14 +38,14 @@ export const FileList = ({ files = [], onDeleteSuccess }) => {
   if (files.length === 0) {
     return (
       <div
-        className="p-8 text-center rounded-2xl text-sm"
+        className="p-8 text-center rounded-2xl text-xs sm:text-sm"
         style={{
           backgroundColor: 'var(--bg-card)',
           border: '1px solid var(--border-primary)',
           color: 'var(--text-muted)'
         }}
       >
-        No files uploaded yet. Upload PDFs or notes to enable vector RAG queries!
+        No files indexed yet. Upload PDFs, notes, or spreadsheets above to enable vector RAG queries!
       </div>
     );
   }
@@ -59,19 +59,22 @@ export const FileList = ({ files = [], onDeleteSuccess }) => {
         boxShadow: 'var(--shadow-sm)'
       }}
     >
-      <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-        Uploaded RAG Knowledge Files ({files.length})
-      </h3>
-      <div style={{ borderColor: 'var(--border-secondary)' }}>
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+          Indexed Knowledge Documents ({files.length})
+        </h3>
+      </div>
+
+      <div className="divide-y" style={{ borderColor: 'var(--border-secondary)' }}>
         {files.map((file) => (
           <div
             key={file.id}
             className="flex items-center justify-between py-3 gap-3 overflow-hidden"
-            style={{ borderBottom: '1px solid var(--border-secondary)' }}
+            style={{ borderColor: 'var(--border-secondary)' }}
           >
             <div className="flex items-center gap-3 min-w-0">
               <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
                 style={{
                   backgroundColor: 'var(--bg-secondary)',
                   border: '1px solid var(--border-secondary)',
@@ -81,19 +84,25 @@ export const FileList = ({ files = [], onDeleteSuccess }) => {
                 <FileText className="w-4 h-4" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{file.name}</span>
-                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{(file.size / 1024).toFixed(1)} KB • {file.chunkCount || 0} chunks</span>
+                <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+                  {file.name}
+                </span>
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  {(file.size / 1024).toFixed(1)} KB • {file.chunkCount || 0} vector chunks
+                </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 shrink-0">
               {getStatusBadge(file.status)}
               <button
+                type="button"
                 onClick={() => handleDelete(file.id)}
-                className="p-2.5 rounded-lg transition-colors"
+                className="p-2 rounded-lg transition-colors cursor-pointer"
                 style={{ color: 'var(--text-muted)' }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444'; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                title="Delete document"
               >
                 <Trash2 className="w-4 h-4" />
               </button>

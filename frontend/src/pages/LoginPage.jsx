@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, CheckCircle2, AlertCircle, Zap } from 'lucide-react';
 import { loginApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import ThemeToggle from '../components/ui/ThemeToggle';
@@ -16,25 +16,36 @@ export const LoginPage = () => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleLoginAttempt = async (loginEmail, loginPassword) => {
     setErrorMessage('');
     setIsLoading(true);
 
     try {
-      const res = await loginApi(email, password);
+      const res = await loginApi(loginEmail, loginPassword);
       if (res.success && res.token) {
         setAuth(res.user, res.token);
         navigate('/chat');
       } else {
-        setErrorMessage(res.error || 'Invalid email or password');
+        const errVal = res.error;
+        const msg = (typeof errVal === 'object' ? errVal?.message : errVal) || 'Invalid email or password';
+        setErrorMessage(msg);
       }
     } catch (err) {
-      const msg = err.response?.data?.error || err.message || 'Login failed. Server might be offline.';
+      const errorData = err.response?.data?.error;
+      const msg = (typeof errorData === 'object' ? errorData?.message : errorData) || err.message || 'Login failed. Server might be offline.';
       setErrorMessage(msg);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    handleLoginAttempt(email, password);
+  };
+
+  const handleDemoLogin = () => {
+    handleLoginAttempt('demo@minigpt.dev', 'password123');
   };
 
   return (
@@ -65,8 +76,8 @@ export const LoginPage = () => {
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md animate-fade-in-up my-auto">
         {/* Brand */}
-        <div className="text-center mb-6 sm:mb-8 mt-12 sm:mt-0">
-          <div className="flex items-center justify-center gap-2.5 mb-3 sm:mb-4">
+        <div className="text-center mb-5 sm:mb-6 mt-12 sm:mt-0">
+          <div className="flex items-center justify-center gap-2.5 mb-2 sm:mb-3">
             <div
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-lg"
               style={{ backgroundColor: 'var(--bg-accent)', color: 'var(--text-on-accent)' }}
@@ -81,16 +92,49 @@ export const LoginPage = () => {
 
         {/* Form Card */}
         <div
-          className="rounded-2xl p-6 sm:p-8"
+          className="rounded-2xl p-6 sm:p-8 space-y-4"
           style={{
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-primary)',
             boxShadow: 'var(--shadow-xl)'
           }}
         >
+          {/* Instant Demo Login Banner */}
+          <div
+            className="p-3 rounded-xl flex items-center justify-between gap-2"
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--border-primary)'
+            }}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Zap className="w-4 h-4 shrink-0 text-amber-500" />
+              <div className="flex flex-col text-left min-w-0">
+                <span className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+                  Recruiter / Demo Mode
+                </span>
+                <span className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
+                  Try immediately without sign up
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleDemoLogin}
+              disabled={isLoading}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all shrink-0 hover:scale-105 cursor-pointer disabled:opacity-50"
+              style={{
+                backgroundColor: 'var(--bg-accent)',
+                color: 'var(--text-on-accent)'
+              }}
+            >
+              Instant <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
+
           {errorMessage && (
             <div
-              className="mb-4 p-3 rounded-lg text-xs flex items-center gap-2"
+              className="p-3 rounded-xl text-xs flex items-center gap-2"
               style={{
                 backgroundColor: 'rgba(239,68,68,0.08)',
                 border: '1px solid rgba(239,68,68,0.2)',
@@ -98,11 +142,11 @@ export const LoginPage = () => {
               }}
             >
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMessage}</span>
+              <span className="break-words">{String(errorMessage)}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--text-tertiary)' }}>
                 <Mail className="w-3.5 h-3.5" /> Email Address
@@ -143,7 +187,7 @@ export const LoginPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors cursor-pointer"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -162,9 +206,6 @@ export const LoginPage = () => {
                 />
                 <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Remember me</span>
               </label>
-              <Link to="/forgot-password" className="text-xs transition-colors" style={{ color: 'var(--text-muted)' }}>
-                Forgot password?
-              </Link>
             </div>
 
             <button
@@ -188,52 +229,18 @@ export const LoginPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full" style={{ borderTop: '1px solid var(--border-primary)' }} />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="px-3" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}>or continue with</span>
-            </div>
-          </div>
-
-          {/* Social */}
-          <div className="grid grid-cols-2 gap-3">
-            {['Google', 'GitHub'].map((provider) => (
-              <button
-                key={provider}
-                type="button"
-                className="py-2.5 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.02]"
-                style={{
-                  border: '1px solid var(--border-primary)',
-                  backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--text-secondary)'
-                }}
-              >
-                <span
-                  className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold"
-                  style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-tertiary)' }}
-                >
-                  {provider[0]}
-                </span>
-                {provider}
-              </button>
-            ))}
-          </div>
-
-          <p className="text-center text-xs mt-6" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-center text-xs pt-2" style={{ color: 'var(--text-muted)' }}>
             Don't have an account?{' '}
-            <Link to="/register" className="font-medium transition-colors" style={{ color: 'var(--text-primary)' }}>
-              Create one now
+            <Link to="/register" className="font-semibold underline" style={{ color: 'var(--text-primary)' }}>
+              Create account
             </Link>
           </p>
         </div>
 
-        {/* Trust */}
-        <div className="mt-6 flex items-center justify-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
-          <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Secure Login</span>
-          <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Encrypted</span>
+        {/* Trust Footer */}
+        <div className="mt-5 flex items-center justify-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Secure Authentication</span>
+          <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Encrypted Session</span>
         </div>
       </div>
     </div>

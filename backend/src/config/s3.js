@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import env from './env.js';
+import logger from '../shared/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,17 +25,21 @@ if (env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY) {
       secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
     },
   });
+  logger.info('Storage', 'AWS S3 Client initialized successfully');
 } else {
-  console.log('📁 Using Local Disk Storage mode for uploaded files (No AWS account required!).');
+  logger.info('Storage', 'Using Local Disk Storage mode for uploaded documents');
 }
+
+const getBaseServerUrl = () => {
+  return env.SERVER_URL || `http://localhost:${env.PORT || 5000}`;
+};
 
 export const uploadToS3 = async (fileBuffer, s3Key, mimeType) => {
   if (!s3Client) {
-    // Save to local disk directory
     const fileName = path.basename(s3Key);
     const filePath = path.join(UPLOADS_DIR, fileName);
     fs.writeFileSync(filePath, fileBuffer);
-    return `http://localhost:${env.PORT || 5000}/uploads/${fileName}`;
+    return `${getBaseServerUrl()}/uploads/${fileName}`;
   }
 
   const command = new PutObjectCommand({
@@ -51,7 +56,7 @@ export const uploadToS3 = async (fileBuffer, s3Key, mimeType) => {
 export const getS3PresignedUrl = async (s3Key, expiresIn = 3600) => {
   if (!s3Client) {
     const fileName = path.basename(s3Key);
-    return `http://localhost:${env.PORT || 5000}/uploads/${fileName}`;
+    return `${getBaseServerUrl()}/uploads/${fileName}`;
   }
 
   const command = new GetObjectCommand({

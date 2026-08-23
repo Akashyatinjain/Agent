@@ -1,54 +1,97 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import env from '../../config/env.js';
 import { generateSmartFallbackResponse } from './smartFallback.js';
+import logger from '../../shared/logger.js';
 
-export const generateGeminiResponse = async ({ prompt, systemPrompt, history = [], onChunk = null }) => {
+export const generateGeminiResponse = async ({
+  prompt,
+  systemPrompt,
+  history = [],
+  onChunk = null
+}) => {
   const apiKey = env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 
-  // If no API key configured, use smart assistant fallback mode
   if (!apiKey || apiKey.trim() === '') {
-    console.warn('⚠️ GEMINI_API_KEY is missing. Using Smart Assistant mode.');
+    logger.warn('GeminiLLM', 'GEMINI_API_KEY missing. Using Smart Assistant fallback.');
     return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'Gemini' });
   }
 
-  // Tested live working models for Gemini API
+  // Live stable Google Gemini models in priority order
   const modelsToTry = [
     'gemini-1.5-flash',
     'gemini-2.0-flash',
-    'gemini-1.5-pro',
-    'gemini-1.0-pro'
+    'gemini-1.5-pro'
   ];
 
   for (const modelName of modelsToTry) {
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: modelName });
-
-      let fullPrompt = prompt;
-      if (systemPrompt) {
-        fullPrompt = `${systemPrompt}\n\nUser: ${prompt}`;
+      
+      const modelOptions = { model: modelName };
+      if (systemPrompt && systemPrompt.trim().length > 0) {
+        modelOptions.systemInstruction = systemPrompt;
       }
 
-      if (onChunk) {
-        const result = await model.generateContentStream(fullPrompt);
-        let completeText = '';
-        for await (const chunk of result.stream) {
-          const chunkText = chunk.text();
-          completeText += chunkText;
-          onChunk(chunkText);
+      const model = genAI.getGenerativeModel(modelOptions);
+
+      // Convert conversation history to Gemini SDK format
+      const formattedHistory = [];
+      if (Array.isArray(history) && history.length > 0) {
+        for (const msg of history) {
+          if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
+            formattedHistory.push({
+              role: msg.role === 'assistant' ? 'model' : 'user',
+              parts: [{ text: msg.content || '' }]
+            });
+          }
         }
-        return completeText;
+      }
+
+      // If we have history, use startChat for genuine multi-turn conversational context
+      if (formattedHistory.length > 0) {
+        const chat = model.startChat({
+          history: formattedHistory
+        });
+
+        if (onChunk) {
+          const result = await chat.sendMessageStream(prompt);
+          let completeText = '';
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) {
+              completeText += chunkText;
+              onChunk(chunkText);
+            }
+          }
+          return completeText;
+        } else {
+          const result = await chat.sendMessage(prompt);
+          return result.response.text();
+        }
       } else {
-        const result = await model.generateContent(fullPrompt);
-        const response = await result.response;
-        return response.text();
+        // Direct single-turn prompt
+        if (onChunk) {
+          const result = await model.generateContentStream(prompt);
+          let completeText = '';
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) {
+              completeText += chunkText;
+              onChunk(chunkText);
+            }
+          }
+          return completeText;
+        } else {
+          const result = await model.generateContent(prompt);
+          return result.response.text();
+        }
       }
     } catch (error) {
-      console.warn(`⚠️ Gemini model ${modelName} call failed: ${error.message.substring(0, 80)}`);
+      logger.warn('GeminiLLM', `Gemini model ${modelName} call failed:`, { error: error.message });
     }
   }
 
-  console.warn('⚠️ All live Gemini models failed. Using Smart Assistant mode.');
+  logger.warn('GeminiLLM', 'All Gemini models failed. Using Smart Assistant fallback.');
   return generateSmartFallbackResponse({ prompt, systemPrompt, history, onChunk, provider: 'Gemini (Live API Fallback)' });
 };
 

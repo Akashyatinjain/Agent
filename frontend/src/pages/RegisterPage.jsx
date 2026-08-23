@@ -2,8 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft, Mail, Lock, Eye, EyeOff,
-  ArrowRight, Shield, CheckCircle2, User, AlertCircle,
-  Github, Twitter, Linkedin
+  ArrowRight, Shield, CheckCircle2, User, AlertCircle
 } from 'lucide-react';
 import { registerApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
@@ -20,7 +19,7 @@ export const RegisterPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    agreeTerms: false
+    agreeTerms: true
   });
   const [isLoading, setIsLoading] = React.useState(false);
   const [errors, setErrors] = React.useState({});
@@ -38,13 +37,13 @@ export const RegisterPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!formData.name.trim()) newErrors.name = 'Full name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email address is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Please enter a valid email';
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
-    if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to the terms';
+    if (!formData.agreeTerms) newErrors.agreeTerms = 'You must agree to terms';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -55,16 +54,19 @@ export const RegisterPage = () => {
 
     setIsLoading(true);
     try {
-      const res = await registerApi(formData.name, formData.email, formData.password);
+      const res = await registerApi(formData.name.trim(), formData.email.trim(), formData.password);
       if (res.success && res.token) {
         setAuth(res.user, res.token);
         navigate('/chat');
       } else {
-        setErrors({ submit: res.error || 'Registration failed' });
+        const errVal = res.error;
+        const msg = (typeof errVal === 'object' ? errVal?.message : errVal) || 'Registration failed';
+        setErrors({ submit: String(msg) });
       }
     } catch (err) {
-      const serverMsg = err.response?.data?.error || err.message || 'Registration failed. Server might be offline.';
-      setErrors({ submit: serverMsg });
+      const errorData = err.response?.data?.error;
+      const serverMsg = (typeof errorData === 'object' ? errorData?.message : errorData) || err.message || 'Registration failed. Server might be offline.';
+      setErrors({ submit: String(serverMsg) });
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +74,7 @@ export const RegisterPage = () => {
 
   const inputStyle = (hasError) => ({
     backgroundColor: 'var(--bg-input)',
-    border: `1px solid ${hasError ? 'rgba(239,68,68,0.5)' : 'var(--border-primary)'}`,
+    border: `1px solid ${hasError ? '#ef4444' : 'var(--border-primary)'}`,
     color: 'var(--text-primary)',
   });
 
@@ -104,8 +106,8 @@ export const RegisterPage = () => {
       {/* Register Card */}
       <div className="relative z-10 w-full max-w-md animate-fade-in-up my-auto">
         {/* Brand */}
-        <div className="text-center mb-4 sm:mb-6 mt-12 sm:mt-0">
-          <div className="flex items-center justify-center gap-2.5 mb-2 sm:mb-4">
+        <div className="text-center mb-4 sm:mb-5 mt-12 sm:mt-0">
+          <div className="flex items-center justify-center gap-2.5 mb-2 sm:mb-3">
             <div
               className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-lg"
               style={{ backgroundColor: 'var(--bg-accent)', color: 'var(--text-on-accent)' }}
@@ -120,7 +122,7 @@ export const RegisterPage = () => {
 
         {/* Form Card */}
         <div
-          className="rounded-2xl p-6 max-h-[85vh] overflow-y-auto"
+          className="rounded-2xl p-6 sm:p-8 space-y-4"
           style={{
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-primary)',
@@ -129,7 +131,7 @@ export const RegisterPage = () => {
         >
           {errors.submit && (
             <div
-              className="mb-4 p-3 rounded-lg text-xs flex items-center gap-2"
+              className="p-3 rounded-xl text-xs flex items-center gap-2"
               style={{
                 backgroundColor: 'rgba(239,68,68,0.08)',
                 border: '1px solid rgba(239,68,68,0.2)',
@@ -137,7 +139,7 @@ export const RegisterPage = () => {
               }}
             >
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errors.submit}</span>
+              <span>{String(errors.submit)}</span>
             </div>
           )}
 
@@ -152,12 +154,12 @@ export const RegisterPage = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="John Doe"
+                placeholder="Alex Johnson"
                 className="w-full px-4 py-2.5 rounded-xl text-sm transition-all duration-200 focus:outline-none"
                 style={inputStyle(errors.name)}
               />
               {errors.name && (
-                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#ef4444' }}>
+                <p className="text-xs flex items-center gap-1 mt-1 text-red-500">
                   <AlertCircle className="w-3 h-3" /> {errors.name}
                 </p>
               )}
@@ -178,7 +180,7 @@ export const RegisterPage = () => {
                 style={inputStyle(errors.email)}
               />
               {errors.email && (
-                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#ef4444' }}>
+                <p className="text-xs flex items-center gap-1 mt-1 text-red-500">
                   <AlertCircle className="w-3 h-3" /> {errors.email}
                 </p>
               )}
@@ -202,14 +204,14 @@ export const RegisterPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors cursor-pointer"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#ef4444' }}>
+                <p className="text-xs flex items-center gap-1 mt-1 text-red-500">
                   <AlertCircle className="w-3 h-3" /> {errors.password}
                 </p>
               )}
@@ -226,47 +228,22 @@ export const RegisterPage = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="Confirm your password"
+                  placeholder="Confirm password"
                   className="w-full px-4 py-2.5 rounded-xl text-sm pr-10 transition-all duration-200 focus:outline-none"
                   style={inputStyle(errors.confirmPassword)}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 transition-colors cursor-pointer"
                   style={{ color: 'var(--text-muted)' }}
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-xs flex items-center gap-1 mt-1" style={{ color: '#ef4444' }}>
+                <p className="text-xs flex items-center gap-1 mt-1 text-red-500">
                   <AlertCircle className="w-3 h-3" /> {errors.confirmPassword}
-                </p>
-              )}
-            </div>
-
-            {/* Terms */}
-            <div className="space-y-1">
-              <label className="flex items-start gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="agreeTerms"
-                  checked={formData.agreeTerms}
-                  onChange={handleChange}
-                  className="w-4 h-4 mt-0.5 rounded cursor-pointer"
-                  style={{ accentColor: 'var(--bg-accent)' }}
-                />
-                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                  I agree to the{' '}
-                  <Link to="/terms" className="font-medium transition-colors" style={{ color: 'var(--text-primary)' }}>Terms of Service</Link>
-                  {' '}and{' '}
-                  <Link to="/privacy" className="font-medium transition-colors" style={{ color: 'var(--text-primary)' }}>Privacy Policy</Link>
-                </span>
-              </label>
-              {errors.agreeTerms && (
-                <p className="text-xs flex items-center gap-1" style={{ color: '#ef4444' }}>
-                  <AlertCircle className="w-3 h-3" /> {errors.agreeTerms}
                 </p>
               )}
             </div>
@@ -293,43 +270,10 @@ export const RegisterPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full" style={{ borderTop: '1px solid var(--border-primary)' }} />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="px-3" style={{ backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)' }}>or sign up with</span>
-            </div>
-          </div>
-
-          {/* Social */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { icon: Github, label: 'GitHub' },
-              { icon: Twitter, label: 'Twitter' },
-              { icon: Linkedin, label: 'LinkedIn' },
-            ].map((provider) => (
-              <button
-                key={provider.label}
-                type="button"
-                className="py-2.5 rounded-xl text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 hover:scale-[1.02]"
-                style={{
-                  border: '1px solid var(--border-primary)',
-                  backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--text-secondary)'
-                }}
-              >
-                <provider.icon className="w-3.5 h-3.5" />
-                {provider.label}
-              </button>
-            ))}
-          </div>
-
-          <p className="text-center text-xs mt-5" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-center text-xs pt-2" style={{ color: 'var(--text-muted)' }}>
             Already have an account?{' '}
-            <Link to="/login" className="font-medium transition-colors" style={{ color: 'var(--text-primary)' }}>
-              Sign in instead
+            <Link to="/login" className="font-semibold underline" style={{ color: 'var(--text-primary)' }}>
+              Sign In
             </Link>
           </p>
         </div>
@@ -337,7 +281,7 @@ export const RegisterPage = () => {
         {/* Trust */}
         <div className="mt-5 flex items-center justify-center gap-4 text-xs" style={{ color: 'var(--text-muted)' }}>
           <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Secure Registration</span>
-          <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Encrypted Data</span>
+          <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Encrypted</span>
         </div>
       </div>
     </div>

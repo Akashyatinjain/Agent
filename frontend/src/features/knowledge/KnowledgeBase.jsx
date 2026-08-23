@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Brain, Trash2, Tag } from 'lucide-react';
+import { Brain, Trash2, Tag, Sparkles, Loader2 } from 'lucide-react';
 import api from '../../api/client';
 
 export const KnowledgeBase = () => {
@@ -9,10 +9,11 @@ export const KnowledgeBase = () => {
   const fetchMemories = async () => {
     try {
       const res = await api.get('/users/memories');
-      if (res.data.success) {
+      if (res.data?.success && Array.isArray(res.data.memories)) {
         setMemories(res.data.memories);
       }
     } catch (e) {
+      console.warn('Failed to fetch memories:', e);
     } finally {
       setLoading(false);
     }
@@ -26,14 +27,16 @@ export const KnowledgeBase = () => {
     try {
       await api.delete(`/users/memories/${id}`);
       setMemories((prev) => prev.filter((m) => m.id !== id));
-    } catch (e) {}
+    } catch (e) {
+      alert('Failed to delete memory');
+    }
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
       <div className="flex items-center gap-3">
         <div
-          className="w-10 h-10 rounded-2xl flex items-center justify-center"
+          className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
           style={{
             backgroundColor: 'var(--bg-secondary)',
             border: '1px solid var(--border-primary)',
@@ -47,30 +50,37 @@ export const KnowledgeBase = () => {
             AI Memory Bank
           </h2>
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-            Facts automatically remembered by MiniGPT during your conversations.
+            Facts and preferences automatically extracted during your conversations.
           </p>
         </div>
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-sm" style={{ color: 'var(--text-muted)' }}>Loading memories...</div>
+        <div className="text-center py-12 flex flex-col items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading memory bank...</span>
+        </div>
       ) : memories.length === 0 ? (
         <div
-          className="p-8 rounded-2xl text-center text-sm"
+          className="p-8 rounded-2xl text-center text-xs sm:text-sm space-y-2"
           style={{
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-primary)',
             color: 'var(--text-muted)'
           }}
         >
-          No memories extracted yet! As you chat with MiniGPT, personal facts, preferences, and details will be automatically remembered here.
+          <Sparkles className="w-6 h-6 mx-auto mb-1 text-amber-500" />
+          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>No memories extracted yet!</p>
+          <p className="max-w-md mx-auto">
+            As you chat with MiniGPT about your role, preferences, projects, or goals, key details are automatically remembered and surfaced here.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {memories.map((mem) => (
             <div
               key={mem.id}
-              className="p-4 rounded-2xl space-y-2 flex flex-col justify-between"
+              className="p-4 rounded-2xl space-y-3 flex flex-col justify-between"
               style={{
                 backgroundColor: 'var(--bg-card)',
                 border: '1px solid var(--border-primary)',
@@ -89,14 +99,16 @@ export const KnowledgeBase = () => {
                     border: '1px solid var(--border-secondary)'
                   }}
                 >
-                  <Tag className="w-3 h-3" /> {mem.category}
+                  <Tag className="w-3 h-3 shrink-0" /> {mem.category || 'general'}
                 </span>
                 <button
+                  type="button"
                   onClick={() => handleDelete(mem.id)}
-                  className="p-2 rounded-lg transition-colors"
+                  className="p-1.5 rounded-lg transition-colors cursor-pointer"
                   style={{ color: 'var(--text-muted)' }}
-                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'; e.currentTarget.style.color = '#ef4444'; }}
                   onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                  title="Remove memory"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
