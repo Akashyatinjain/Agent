@@ -29,6 +29,7 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
+  'https://miniakashagent.vercel.app',
   env.CLIENT_URL
 ].filter(Boolean);
 
@@ -100,8 +101,7 @@ app.use(errorHandler);
 
 const PORT = env.PORT || 5000;
 
-// Only listen on port in standalone Node runtime (not in Vercel Serverless environment or testing)
-if (process.env.VERCEL !== '1' && process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test') {
   const server = app.listen(PORT, () => {
     logger.info('Server', `🚀 MiniGPT API Server running on port ${PORT}`);
     logger.info('Server', `📡 Health Check: http://localhost:${PORT}/api/health`);
