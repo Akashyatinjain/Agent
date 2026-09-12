@@ -1,5 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
@@ -9,28 +9,42 @@ datasource db {
   extensions = [vector]
 }
 
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  name          String
-  passwordHash  String
-  avatar        String?
-  settings      Json           @default("{}")
-  conversations Conversation[]
-  files         File[]
-  documents     Document[]
-  memories      Memory[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id             String         @id @default(cuid())
+  email          String         @unique
+  hashedPassword String
+  name           String
+  avatar         String?
+  settings       Json           @default("{}")
+
+  conversations  Conversation[]
+  files          File[]
+  documents      Document[]
+  memories       Memory[]
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 }
 
 model Conversation {
   id        String    @id @default(cuid())
-  title     String    @default("New Conversation")
+  title     String    @default("New conversation")
+
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   messages  Message[]
+  documents Document[]
+
   model     String    @default("gemini")
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
@@ -38,60 +52,75 @@ model Conversation {
 }
 
 model Message {
-  id             String       @id @default(cuid())
-  role           String       // "user" | "assistant" | "system"
-  content        String       @db.Text
+  id             String        @id @default(cuid())
+  role           MessageRole
+  content        String        @db.Text
+
   conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  model          String?      // which LLM model generated this response
-  routerType     String?      // "chat" | "rag" | "tool" | "hybrid"
-  toolCalls      Json?        // metadata regarding tools executed
-  ragContext     Json?        // metadata regarding retrieved RAG chunks
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  model          String?
+  routerType     String?
+  toolCalls      Json?
+  ragContext     Json?
   tokenCount     Int?
-  createdAt      DateTime     @default(now())
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([conversationId])
 }
 
 model File {
-  id          String     @id @default(cuid())
-  name        String
-  type        String
-  size        Int
-  s3Key       String
-  s3Url       String
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  documents   Document[]
-  status      String     @default("pending") // "pending" | "processing" | "completed" | "failed"
-  chunkCount  Int        @default(0)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  name      String
+  type      String
+  size      Int
+  s3Key     String
+
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  documents Document[]
+
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@index([userId])
 }
 
 model Document {
-  id        String                      @id @default(cuid())
-  content   String                      @db.Text
-  metadata  Json                        // file name, chunk index, page number etc.
-  embedding Unsupported("vector(1536)")? // pgvector column for 1536d OpenAI/Gemini vectors
-  fileId    String?
-  file      File?                       @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime                    @default(now())
+  id             String         @id @default(cuid())
+  content        String         @db.Text
+  metadata       Json
+
+  embedding      Unsupported("vector(1536)")?
+
+  fileId         String?
+  file           File?          @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  conversationId String?
+  conversation   Conversation?  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@index([userId])
   @@index([fileId])
+  @@index([conversationId])
 }
 
 model Memory {
   id        String   @id @default(cuid())
-  fact      String
-  category  String   @default("general") // "preference", "personal", "work", "lifestyle"
+  fact      String   @db.Text
+  category  String   @default("general")
+
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

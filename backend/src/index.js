@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
+import path from 'path'
 import { fileURLToPath } from 'url';
 import env from './config/env.js';
 import logger from './shared/logger.js';
@@ -12,18 +12,17 @@ import chatRoutes from './chat/routes.js';
 import fileRoutes from './files/routes.js';
 import userRoutes from './users/routes.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
+const filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(filename);
 
 const app = express();
 
-// Trust proxy for rate limiting and IP detection on reverse proxies (Vercel, Render)
 app.set('trust proxy', 1);
 
-// Attach Request ID to every incoming request
 app.use(requestIdMiddleware);
 
-// Strict & Safe CORS Setup
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
@@ -35,57 +34,63 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser tools (like curl / Postman) without origin header
-    if (!origin) return callback(null, true);
-
-    const isAllowed = allowedOrigins.some((allowed) => origin === allowed || origin.startsWith('http://localhost:'));
-    const isVercel = origin.endsWith('.vercel.app') || origin.endsWith('.onrender.com');
-
-    if (isAllowed || isVercel || env.isDevelopment) {
+    // Allow requests without an Origin header
+    if (!origin) {
       return callback(null, true);
     }
+
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      origin.startsWith('http://localhost:') ||
+      origin.startsWith('http://127.0.0.1:') ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com');
+
+    if (isAllowed || env.isDevelopment) {
+      return callback(null, true);
+    }
+
     logger.warn('CORS', `Blocked request from origin: ${origin}`);
-    return callback(new Error(`Origin ${origin} not allowed by CORS policy`), false);
+    return callback(new Error('Not allowed by CORS'));
   },
+
   credentials: true,
+
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'X-Requested-With']
+
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Request-ID',
+    'X-Requested-With'
+  ]
 }));
 
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
-// Static local uploads directory
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     success: true,
-    data: {
-      status: 'ok',
-      app: 'MiniGPT API Server',
-      timestamp: new Date().toISOString(),
-      environment: env.NODE_ENV,
-      version: '1.0.0'
-    }
-  });
+    message: "System is running",
+    timestamp: new Date().toISOString()
+  })
 });
 
-// Rate limiting on sensitive authentication routes (30 requests / 15 mins)
 const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 30,
-  message: 'Too many authentication attempts. Please try again in 15 minutes.'
+  message: 'Too many requests. Please try again after 15 minutes.'
 });
 
-// Mount modular API routes
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/files', fileRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/user', userRoutes);
 
-// 404 Catch-all handler for undefined API routes
 app.use('/api/*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -94,9 +99,8 @@ app.use('/api/*', (req, res) => {
       message: `API endpoint ${req.method} ${req.originalUrl} not found.`
     }
   });
-});
+})
 
-// Global Centralized Error Handler
 app.use(errorHandler);
 
 const PORT = env.PORT || 5000;
@@ -119,3 +123,4 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 export default app;
+

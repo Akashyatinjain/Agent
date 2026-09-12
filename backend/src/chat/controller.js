@@ -68,7 +68,7 @@ export const sendMessage = async (req, res, next) => {
           ragContext: attachedFile ? JSON.stringify({ attachedFile }) : null
         }
       });
-    } catch (e) {}
+    } catch (e) { }
 
     if (isStream) {
       const { sendEvent, sendError, closeStream } = setupSSEStream(res);
@@ -110,7 +110,7 @@ export const sendMessage = async (req, res, next) => {
           await prisma.conversation.update({
             where: { id: activeConversationId },
             data: { updatedAt: new Date() }
-          }).catch(() => {});
+          }).catch(() => { });
         } catch (dbErr) {
           logger.warn('ChatController', 'Failed to save assistant message:', { error: dbErr.message });
         }
@@ -122,7 +122,7 @@ export const sendMessage = async (req, res, next) => {
               saveMemory({ userId, fact: extracted.fact, category: extracted.category || 'general' });
             }
           })
-          .catch(() => {});
+          .catch(() => { });
 
         closeStream();
       } catch (streamErr) {
@@ -151,7 +151,7 @@ export const sendMessage = async (req, res, next) => {
             ragContext: metadata.ragChunks ? JSON.stringify(metadata.ragChunks) : null
           }
         });
-      } catch (e) {}
+      } catch (e) { }
 
       return res.json({
         success: true,
@@ -261,7 +261,7 @@ export const deleteConversation = async (req, res, next) => {
 
     await prisma.conversation.deleteMany({
       where: { id, userId }
-    }).catch(() => {});
+    }).catch(() => { });
 
     logger.info('ChatController', `Deleted conversation: ${id}`, { userId });
 
