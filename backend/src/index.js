@@ -90,6 +90,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes);
 
 app.use('/api/*', (req, res) => {
   res.status(404).json({

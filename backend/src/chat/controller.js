@@ -51,10 +51,14 @@ export const sendMessage = async (req, res, next) => {
       const pastMessages = await prisma.message.findMany({
         where: { conversationId: activeConversationId },
         orderBy: { createdAt: 'asc' },
-        take: 12
+        take: 20
       });
-      history = pastMessages.map((m) => ({ role: m.role, content: m.content }));
+      history = pastMessages.map((m) => ({
+        role: (m.role || '').toLowerCase() === 'assistant' ? 'assistant' : 'user',
+        content: m.content
+      }));
     } catch (e) {
+      logger.warn('ChatController', 'Failed to retrieve conversation history:', { error: e.message });
       history = [];
     }
 
@@ -62,13 +66,15 @@ export const sendMessage = async (req, res, next) => {
     try {
       await prisma.message.create({
         data: {
-          role: 'user',
+          role: 'USER',
           content: cleanMessage,
           conversationId: activeConversationId,
           ragContext: attachedFile ? JSON.stringify({ attachedFile }) : null
         }
       });
-    } catch (e) { }
+    } catch (e) {
+      logger.error('ChatController', 'Failed to save user message to DB:', { error: e.message });
+    }
 
     if (isStream) {
       const { sendEvent, sendError, closeStream } = setupSSEStream(res);
@@ -97,13 +103,13 @@ export const sendMessage = async (req, res, next) => {
         try {
           await prisma.message.create({
             data: {
-              role: 'assistant',
+              role: 'ASSISTANT',
               content: fullResponseText,
               conversationId: activeConversationId,
               model,
-              routerType: metadata.pipeline,
-              toolCalls: metadata.toolResults && metadata.toolResults.length > 0 ? JSON.stringify(metadata.toolResults) : null,
-              ragContext: metadata.ragChunks && metadata.ragChunks.length > 0 ? JSON.stringify(metadata.ragChunks) : null
+              routerType: metadata?.pipeline,
+              toolCalls: metadata?.toolResults && metadata.toolResults.length > 0 ? JSON.stringify(metadata.toolResults) : null,
+              ragContext: metadata?.ragChunks && metadata.ragChunks.length > 0 ? JSON.stringify(metadata.ragChunks) : null
             }
           });
 
@@ -112,7 +118,7 @@ export const sendMessage = async (req, res, next) => {
             data: { updatedAt: new Date() }
           }).catch(() => { });
         } catch (dbErr) {
-          logger.warn('ChatController', 'Failed to save assistant message:', { error: dbErr.message });
+          logger.error('ChatController', 'Failed to save assistant message:', { error: dbErr.message });
         }
 
         // Asynchronously extract personal user facts/preferences to memory bank
@@ -142,16 +148,18 @@ export const sendMessage = async (req, res, next) => {
       try {
         await prisma.message.create({
           data: {
-            role: 'assistant',
+            role: 'ASSISTANT',
             content: fullResponseText,
             conversationId: activeConversationId,
             model,
-            routerType: metadata.pipeline,
-            toolCalls: metadata.toolResults ? JSON.stringify(metadata.toolResults) : null,
-            ragContext: metadata.ragChunks ? JSON.stringify(metadata.ragChunks) : null
+            routerType: metadata?.pipeline,
+            toolCalls: metadata?.toolResults ? JSON.stringify(metadata.toolResults) : null,
+            ragContext: metadata?.ragChunks ? JSON.stringify(metadata.ragChunks) : null
           }
         });
-      } catch (e) { }
+      } catch (e) {
+        logger.error('ChatController', 'Failed to save non-stream assistant message:', { error: e.message });
+      }
 
       return res.json({
         success: true,
@@ -168,23 +176,21 @@ export const sendMessage = async (req, res, next) => {
 export const getConversations = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    let conversations = [];
 
-    try {
-      conversations = await prisma.conversation.findMany({
-        where: { userId },
-        orderBy: { updatedAt: 'desc' },
-        include: {
-          messages: {
-            take: 1,
-            orderBy: { createdAt: 'desc' }
-          }
+    const conversations = await prisma.conversation.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        model: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: { messages: true }
         }
-      });
-    } catch (e) {
-      logger.warn('ChatController', 'Prisma get conversations warning:', { error: e.message });
-      conversations = [];
-    }
+      }
+    });
 
     return res.json({
       success: true,
@@ -217,9 +223,17 @@ export const getConversationById = async (req, res, next) => {
       });
     }
 
+    const normalizedConversation = {
+      ...conversation,
+      messages: (conversation.messages || []).map((m) => ({
+        ...m,
+        role: (m.role || '').toLowerCase()
+      }))
+    };
+
     return res.json({
       success: true,
-      conversation
+      conversation: normalizedConversation
     });
   } catch (error) {
     next(error);

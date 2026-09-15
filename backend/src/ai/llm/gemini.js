@@ -21,15 +21,12 @@ export const generateGeminiResponse = async ({
   // Active Google Gemini models in priority order
   const modelsToTry = [
     ...(cachedWorkingModel ? [cachedWorkingModel] : []),
-    'gemini-1.5-flash-latest',
-    'gemini-1.5-flash-8b',
-    'gemini-1.5-flash',
-    'gemini-2.0-flash-exp',
-    'gemini-2.5-flash',
-    'gemini-3.6-flash',
-    'gemini-1.5-pro-latest',
-    'gemini-1.5-pro',
-    'gemini-pro'
+    'gemini-flash-lite-latest',
+    'gemini-3.5-flash-lite',
+    'gemini-flash-latest',
+    'gemini-3.8-flash',
+    'gemini-3.7-flash',
+    'gemini-3.6-flash'
   ].filter((v, i, a) => a.indexOf(v) === i);
 
   for (const modelName of modelsToTry) {
@@ -47,13 +44,19 @@ export const generateGeminiResponse = async ({
       const formattedHistory = [];
       if (Array.isArray(history) && history.length > 0) {
         for (const msg of history) {
-          if (msg.role === 'user' || msg.role === 'assistant' || msg.role === 'model') {
+          const rawRole = (msg.role || '').toLowerCase();
+          if (rawRole === 'user' || rawRole === 'assistant' || rawRole === 'model') {
             formattedHistory.push({
-              role: msg.role === 'assistant' ? 'model' : 'user',
+              role: rawRole === 'assistant' ? 'model' : 'user',
               parts: [{ text: msg.content || '' }]
             });
           }
         }
+      }
+
+      // Gemini startChat requires the first turn in history to have role 'user'
+      while (formattedHistory.length > 0 && formattedHistory[0].role !== 'user') {
+        formattedHistory.shift();
       }
 
       // If we have history, use startChat for multi-turn conversational context

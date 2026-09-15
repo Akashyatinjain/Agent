@@ -62,7 +62,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState(null); // 'up' | 'down' | null
   const { theme } = useUIStore();
-  const isUser = message.role === 'user';
+  const isUser = (message.role || '').toLowerCase() === 'user';
   const isDark = theme === 'dark';
 
   const isError = !isUser && (
@@ -85,7 +85,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
       if (parsed?.attachedFile) {
         attachedDocument = parsed.attachedFile;
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   const getRouterBadge = (type) => {
@@ -112,19 +112,19 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
 
   const bubbleStyle = isUser
     ? {
-        backgroundColor: isDark ? '#27272a' : '#f4f4f5',
-        color: isDark ? '#fafafa' : '#09090b',
-        border: '1px solid var(--border-primary)',
-        boxShadow: 'var(--shadow-sm)'
-      }
+      backgroundColor: isDark ? '#27272a' : '#f4f4f5',
+      color: isDark ? '#fafafa' : '#09090b',
+      border: '1px solid var(--border-primary)',
+      boxShadow: 'var(--shadow-sm)'
+    }
     : isError
-    ? {
+      ? {
         backgroundColor: 'rgba(239, 68, 68, 0.06)',
         color: 'var(--text-primary)',
         border: '1px solid rgba(239, 68, 68, 0.25)',
         boxShadow: 'var(--shadow-sm)'
       }
-    : {
+      : {
         backgroundColor: isDark ? '#121215' : '#ffffff',
         color: 'var(--text-primary)',
         border: '1px solid var(--border-primary)',
@@ -146,8 +146,8 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
           backgroundColor: isUser
             ? (isDark ? '#3f3f46' : '#e4e4e7')
             : isError
-            ? 'rgba(239, 68, 68, 0.15)'
-            : 'var(--bg-secondary)',
+              ? 'rgba(239, 68, 68, 0.15)'
+              : 'var(--bg-secondary)',
           color: isUser ? (isDark ? '#ffffff' : '#09090b') : isError ? '#ef4444' : 'var(--text-primary)',
           border: '1px solid var(--border-primary)'
         }}
@@ -282,7 +282,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
               code({ node, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '');
                 const isCodeBlock = match || String(children).includes('\n');
-                
+
                 if (isCodeBlock) {
                   return (
                     <CodeBlock
