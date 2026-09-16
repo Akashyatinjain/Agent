@@ -10,6 +10,8 @@ import useChatStore from '../../store/chatStore';
 import useUIStore from '../../store/uiStore';
 import ThemeToggle from './ThemeToggle';
 
+import AgentLogo from './AgentLogo';
+
 export const Sidebar = () => {
   const { user, logout } = useAuthStore();
   const {
@@ -147,20 +149,12 @@ export const Sidebar = () => {
         {isSidebarOpen ? (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 shadow-xs select-none"
-                style={{
-                  backgroundColor: 'var(--bg-accent)',
-                  color: 'var(--text-on-accent)'
-                }}
-              >
-                M
-              </div>
+              <AgentLogo size={32} className="transition-transform hover:scale-105" />
               <span
                 className="font-bold text-base tracking-tight truncate animate-fade-in select-none"
                 style={{ color: 'var(--text-primary)' }}
               >
-                MiniGPT
+                Agent AI
               </span>
             </div>
 
@@ -210,14 +204,8 @@ export const Sidebar = () => {
               title="Expand sidebar (Ctrl+B)"
               aria-label="Expand sidebar"
             >
-              <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shadow-xs transition-transform duration-200 group-hover:scale-95 group-hover:opacity-0"
-                style={{
-                  backgroundColor: 'var(--bg-accent)',
-                  color: 'var(--text-on-accent)'
-                }}
-              >
-                M
+              <div className="w-7 h-7 flex items-center justify-center transition-transform duration-200 group-hover:scale-95 group-hover:opacity-0">
+                <AgentLogo size={28} />
               </div>
               <PanelLeftOpen
                 className="w-4 h-4 absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:scale-110"

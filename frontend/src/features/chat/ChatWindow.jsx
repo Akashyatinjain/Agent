@@ -237,7 +237,7 @@ export const ChatWindow = () => {
 
           <div className="flex items-center gap-2 min-w-0">
             <span className="font-bold text-sm tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              MiniGPT
+              Agent AI
             </span>
             <span
               className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold"

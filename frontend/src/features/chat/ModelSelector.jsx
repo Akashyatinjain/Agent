@@ -4,7 +4,6 @@ import useChatStore from '../../store/chatStore';
 
 const models = [
   { id: 'gemini', label: 'Gemini Flash', shortLabel: 'Gemini', icon: Sparkles },
-  { id: 'openai', label: 'GPT-4o Mini', shortLabel: 'GPT-4o', icon: Cpu },
   { id: 'mistral', label: 'Mistral AI', shortLabel: 'Mistral', icon: Zap },
 ];
 

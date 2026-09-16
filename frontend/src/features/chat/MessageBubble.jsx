@@ -170,7 +170,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
                 color: isUser ? (isDark ? '#e4e4e7' : '#27272a') : 'var(--text-primary)'
               }}
             >
-              {isUser ? 'You' : 'MiniGPT'}
+              {isUser ? 'You' : 'Agent'}
             </span>
             {!isUser && message.routerType && getRouterBadge(message.routerType)}
             {!isUser && isStreaming && (
