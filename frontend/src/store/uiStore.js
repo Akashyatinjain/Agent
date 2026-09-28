@@ -10,6 +10,10 @@ const getInitialTheme = () => {
 
 const getInitialSidebarState = () => {
   if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('minigpt_sidebar_open');
+    if (saved !== null) {
+      return saved === 'true';
+    }
     return window.innerWidth >= 1024;
   }
   return true;
@@ -21,7 +25,19 @@ export const useUIStore = create((set) => ({
   isUploadModalOpen: false,
   theme: getInitialTheme(),
 
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  toggleSidebar: () => set((state) => {
+    const next = !state.isSidebarOpen;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('minigpt_sidebar_open', String(next));
+    }
+    return { isSidebarOpen: next };
+  }),
+  setSidebarOpen: (isOpen) => set(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('minigpt_sidebar_open', String(isOpen));
+    }
+    return { isSidebarOpen: isOpen };
+  }),
   closeSidebarOnMobile: () => set((state) => {
     if (typeof window !== 'undefined' && window.innerWidth < 1024) {
       return { isSidebarOpen: false };

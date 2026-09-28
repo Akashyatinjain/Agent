@@ -50,7 +50,6 @@ export const SettingsPanel = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             {[
               { name: 'Google Gemini', model: 'gemini-1.5-flash / 2.0', icon: Sparkles, badge: 'Active' },
-              { name: 'OpenAI', model: 'gpt-4o-mini / gpt-4o', icon: Cpu, badge: 'Active' },
               { name: 'Mistral AI', model: 'mistral-small-latest', icon: Zap, badge: 'Active' },
             ].map((llm) => (
               <div

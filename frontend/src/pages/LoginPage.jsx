@@ -4,6 +4,7 @@ import { ChevronLeft, Mail, Lock, Eye, EyeOff, ArrowRight, Shield, CheckCircle2,
 import { loginApi } from '../api/auth';
 import { useAuthStore } from '../store/authStore';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import AgentLogo from '../components/ui/AgentLogo';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -78,13 +79,8 @@ export const LoginPage = () => {
         {/* Brand */}
         <div className="text-center mb-5 sm:mb-6 mt-12 sm:mt-0">
           <div className="flex items-center justify-center gap-2.5 mb-2 sm:mb-3">
-            <div
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-bold text-lg"
-              style={{ backgroundColor: 'var(--bg-accent)', color: 'var(--text-on-accent)' }}
-            >
-              M
-            </div>
-            <span className="font-bold text-xl tracking-tight" style={{ color: 'var(--text-primary)' }}>MiniGPT</span>
+            <AgentLogo size={36} className="shadow-xs" />
+            <span className="font-bold text-xl tracking-tight" style={{ color: 'var(--text-primary)' }}>Agent AI</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Welcome Back</h1>
           <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Sign in to continue your AI journey</p>

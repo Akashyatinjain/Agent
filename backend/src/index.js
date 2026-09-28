@@ -29,6 +29,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
   'https://miniakashagent.vercel.app',
+  'https://res-gptagent.vercel.app',
   env.CLIENT_URL
 ].filter(Boolean);
 
@@ -90,6 +91,7 @@ app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes);
 
 app.use('/api/*', (req, res) => {
   res.status(404).json({

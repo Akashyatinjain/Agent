@@ -1,6 +1,3 @@
-/**
- * Shared constants for MiniGPT Backend
- */
 
 export const ROUTER_TYPES = {
   CHAT: 'chat',
@@ -16,8 +13,7 @@ export const MODEL_PROVIDERS = {
 };
 
 export const DEFAULT_MODELS = {
-  GEMINI: 'gemini-1.5-flash',
-  OPENAI: 'gpt-4o-mini',
+  GEMINI: 'gemini-flash-lite-latest',
   MISTRAL: 'mistral-small-latest'
 };
 

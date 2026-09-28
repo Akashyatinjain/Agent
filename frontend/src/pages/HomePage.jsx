@@ -8,6 +8,7 @@ import {
   Github, Twitter, Linkedin, Mail
 } from 'lucide-react';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import AgentLogo from '../components/ui/AgentLogo';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -94,14 +95,9 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-transform group-hover:scale-110"
-                style={{ backgroundColor: 'var(--bg-accent)', color: 'var(--text-on-accent)' }}
-              >
-                M
-              </div>
+              <AgentLogo size={32} className="transition-transform group-hover:scale-110" />
               <span className="font-bold text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                MiniGPT
+                Agent AI
               </span>
             </Link>
 
@@ -284,7 +280,7 @@ const HomePage = () => {
           {/* Tech Stack */}
           <div className="pt-4 flex flex-wrap items-center justify-center gap-3 animate-fade-in stagger-4">
             {[
-              { icon: Cpu, label: 'Multi-LLM (Gemini 3.6 + GPT-4o + Mistral)' },
+              { icon: Cpu, label: 'Multi-LLM (Gemini 3.6  + Mistral)' },
               { icon: Database, label: 'Neon PostgreSQL + pgvector' },
               { icon: Wrench, label: 'Weather, Search & Math Tools' },
             ].map((item, idx) => (
@@ -379,7 +375,7 @@ const HomePage = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                     {[
-                      { label: 'Chat Pipeline', desc: 'Direct conversation with Gemini 3.6 or GPT-4o.', icon: Bot },
+                      { label: 'Chat Pipeline', desc: 'Direct conversation with Gemini 3.6 .', icon: Bot },
                       { label: 'RAG Pipeline', desc: 'Retrieves document embeddings via pgvector.', icon: FileText },
                       { label: 'Tool Pipeline', desc: 'Executes Weather, Search, or Math APIs.', icon: Globe },
                     ].map((item) => (
@@ -578,13 +574,8 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
             <div className="flex items-center gap-2">
-              <div
-                className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-bold"
-                style={{ backgroundColor: 'var(--bg-accent)', color: 'var(--text-on-accent)' }}
-              >
-                M
-              </div>
-              <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>MiniGPT 2026</span>
+              <AgentLogo size={22} />
+              <span className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>Agent AI</span>
             </div>
             <div className="flex items-center gap-6 text-xs" style={{ color: 'var(--text-muted)' }}>
               <span>React 18 · Express · Neon PostgreSQL · AWS S3</span>

@@ -5,9 +5,7 @@ import logger from '../../shared/logger.js';
 
 const TARGET_DIMENSION = 1536;
 
-/**
- * Normalizes any vector to unit length (L2 norm = 1.0)
- */
+
 export const normalizeVector = (vec) => {
   let norm = 0;
   for (let i = 0; i < vec.length; i++) {
@@ -18,21 +16,17 @@ export const normalizeVector = (vec) => {
   return vec.map((val) => val / norm);
 };
 
-/**
- * Generate a deterministic normalized 1536-dim semantic vector for offline testing
- */
+
 const generateDeterministicVector = (text) => {
   const vec = new Array(TARGET_DIMENSION).fill(0);
   const clean = text.toLowerCase().trim();
 
-  // Character trigram hashing for semantic keyword similarity
   for (let i = 0; i < clean.length - 2; i++) {
     const code = clean.charCodeAt(i) * 31 + clean.charCodeAt(i + 1) * 17 + clean.charCodeAt(i + 2);
     const idx = Math.abs(code) % TARGET_DIMENSION;
     vec[idx] += 1.0;
   }
 
-  // Add word level frequency
   const words = clean.split(/\s+/);
   for (let w = 0; w < words.length; w++) {
     let wordHash = 0;

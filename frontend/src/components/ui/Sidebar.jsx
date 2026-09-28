@@ -2,13 +2,15 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   MessageSquare, Folder, Brain, Settings, LogOut,
-  Plus, ChevronLeft, Search, Trash2, Edit2, Check, X,
-  FileText
+  Plus, Search, Trash2, Edit2, Check, X,
+  FileText, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import useAuthStore from '../../store/authStore';
 import useChatStore from '../../store/chatStore';
 import useUIStore from '../../store/uiStore';
 import ThemeToggle from './ThemeToggle';
+
+import AgentLogo from './AgentLogo';
 
 export const Sidebar = () => {
   const { user, logout } = useAuthStore();
@@ -31,6 +33,18 @@ export const Sidebar = () => {
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  // Global Ctrl+B / Cmd+B listener for toggling sidebar
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSidebar]);
 
   const handleNewChat = () => {
     startNewChat();
@@ -119,7 +133,7 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto flex flex-col justify-between shrink-0 transition-all duration-300 theme-transition ${
+      className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out theme-transition overflow-x-hidden ${
         isSidebarOpen
           ? 'w-72 lg:w-64 translate-x-0'
           : '-translate-x-full lg:translate-x-0 lg:w-16'
@@ -131,77 +145,115 @@ export const Sidebar = () => {
       }}
     >
       {/* Top Header */}
-      <div className="p-3 space-y-2.5 shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 shadow-xs"
-              style={{
-                backgroundColor: 'var(--bg-accent)',
-                color: 'var(--text-on-accent)'
-              }}
-            >
-              M
-            </div>
-            {isSidebarOpen && (
+      <div className={`p-3 shrink-0 ${isSidebarOpen ? 'space-y-2.5' : 'space-y-3 flex flex-col items-center'}`}>
+        {isSidebarOpen ? (
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <AgentLogo size={32} className="transition-transform hover:scale-105" />
               <span
-                className="font-bold text-base tracking-tight truncate animate-fade-in"
+                className="font-bold text-base tracking-tight truncate animate-fade-in select-none"
                 style={{ color: 'var(--text-primary)' }}
               >
-                MiniGPT
+                Agent AI
               </span>
-            )}
-          </div>
+            </div>
 
-          <div className="flex items-center gap-1">
-            {isSidebarOpen && <ThemeToggle />}
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                className="p-1.5 rounded-lg transition-colors hidden lg:inline-flex cursor-pointer"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                aria-label="Collapse sidebar"
+                title="Collapse sidebar (Ctrl+B)"
+              >
+                <PanelLeftClose className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                className="p-1.5 rounded-lg transition-colors lg:hidden cursor-pointer"
+                style={{ color: 'var(--text-muted)' }}
+                aria-label="Close sidebar"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center w-full">
             <button
               type="button"
               onClick={toggleSidebar}
-              className="p-1.5 rounded-lg transition-colors hidden lg:inline-flex cursor-pointer"
-              style={{ color: 'var(--text-muted)' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-              aria-label="Toggle sidebar"
+              className="relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer group"
+              style={{
+                backgroundColor: 'transparent',
+                border: '1px solid transparent',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                e.currentTarget.style.borderColor = 'var(--border-primary)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.borderColor = 'transparent';
+              }}
+              title="Expand sidebar (Ctrl+B)"
+              aria-label="Expand sidebar"
             >
-              <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${!isSidebarOpen ? 'rotate-180' : ''}`} />
-            </button>
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              className="p-1.5 rounded-lg transition-colors lg:hidden cursor-pointer"
-              style={{ color: 'var(--text-muted)' }}
-              aria-label="Close sidebar"
-            >
-              <X className="w-5 h-5" />
+              <div className="w-7 h-7 flex items-center justify-center transition-transform duration-200 group-hover:scale-95 group-hover:opacity-0">
+                <AgentLogo size={28} />
+              </div>
+              <PanelLeftOpen
+                className="w-4 h-4 absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-all duration-200 group-hover:scale-110"
+                style={{ color: 'var(--text-primary)' }}
+              />
             </button>
           </div>
-        </div>
+        )}
 
         {/* New Chat Button */}
-        <button
-          type="button"
-          onClick={handleNewChat}
-          className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
-          style={{
-            backgroundColor: 'var(--bg-accent)',
-            color: 'var(--text-on-accent)',
-            boxShadow: 'var(--shadow-sm)'
-          }}
-          title="Start a new chat (clears active session)"
-        >
-          <span className="flex items-center gap-2">
-            <Plus className="w-4 h-4 shrink-0 transition-transform group-hover:rotate-90" />
-            {isSidebarOpen && <span>New Chat</span>}
-          </span>
-          {isSidebarOpen && (
+        {isSidebarOpen ? (
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer group"
+            style={{
+              backgroundColor: 'var(--bg-accent)',
+              color: 'var(--text-on-accent)',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+            title="Start a new chat (Ctrl+K)"
+          >
+            <span className="flex items-center gap-2">
+              <Plus className="w-4 h-4 shrink-0 transition-transform group-hover:rotate-90" />
+              <span>New Chat</span>
+            </span>
             <span className="text-[10px] opacity-70 font-mono hidden sm:inline">Ctrl+K</span>
-          )}
-        </button>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="w-9 h-9 rounded-xl flex items-center justify-center font-semibold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer group"
+            style={{
+              backgroundColor: 'var(--bg-accent)',
+              color: 'var(--text-on-accent)',
+              boxShadow: 'var(--shadow-sm)'
+            }}
+            title="New chat (Ctrl+K)"
+            aria-label="New chat"
+          >
+            <Plus className="w-4 h-4 shrink-0 transition-transform group-hover:rotate-90" />
+          </button>
+        )}
 
         {/* Search Conversations Input */}
         {isSidebarOpen && conversations.length > 3 && (
-          <div className="relative flex items-center animate-fade-in">
+          <div className="relative flex items-center animate-fade-in w-full">
             <Search className="absolute left-2.5 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
             <input
               type="text"
@@ -220,14 +272,20 @@ export const Sidebar = () => {
       </div>
 
       {/* Navigation & Grouped Conversations List */}
-      <div className="flex-1 px-2.5 py-1 space-y-1 overflow-y-auto min-h-0">
+      <div className={`flex-1 ${isSidebarOpen ? 'px-2.5 py-1 space-y-1' : 'px-2 py-2 space-y-2 flex flex-col items-center'} overflow-y-auto min-h-0`}>
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             onClick={closeSidebarOnMobile}
             title={!isSidebarOpen ? item.label : undefined}
-            className={({ isActive }) => `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-150`}
+            className={({ isActive }) =>
+              `flex items-center rounded-xl text-xs sm:text-sm font-medium transition-all duration-150 ${
+                isSidebarOpen
+                  ? 'w-full gap-2.5 px-3 py-2 justify-start'
+                  : 'w-9 h-9 justify-center p-0'
+              }`
+            }
             style={({ isActive }) => ({
               backgroundColor: isActive ? 'var(--bg-hover)' : 'transparent',
               color: isActive ? 'var(--text-primary)' : 'var(--text-tertiary)',
@@ -346,25 +404,25 @@ export const Sidebar = () => {
       </div>
 
       {/* User Footer Profile */}
-      <div className="p-3 shrink-0" style={{ borderTop: '1px solid var(--border-secondary)' }}>
-        <div
-          className="flex items-center justify-between p-2 rounded-xl transition-colors min-w-0"
-          style={{
-            backgroundColor: 'var(--bg-secondary)',
-            border: '1px solid var(--border-primary)'
-          }}
-        >
-          <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold"
-              style={{
-                backgroundColor: 'var(--bg-accent)',
-                color: 'var(--text-on-accent)'
-              }}
-            >
-              {(user?.name || 'U')[0].toUpperCase()}
-            </div>
-            {isSidebarOpen && (
+      <div className={`p-3 shrink-0 ${!isSidebarOpen ? 'flex flex-col items-center gap-2' : ''}`} style={{ borderTop: '1px solid var(--border-secondary)' }}>
+        {isSidebarOpen ? (
+          <div
+            className="flex items-center justify-between p-2 rounded-xl transition-colors min-w-0"
+            style={{
+              backgroundColor: 'var(--bg-secondary)',
+              border: '1px solid var(--border-primary)'
+            }}
+          >
+            <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+              <div
+                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold"
+                style={{
+                  backgroundColor: 'var(--bg-accent)',
+                  color: 'var(--text-on-accent)'
+                }}
+              >
+                {(user?.name || 'U')[0].toUpperCase()}
+              </div>
               <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
                 <span
                   className="text-xs font-bold truncate leading-tight"
@@ -379,9 +437,7 @@ export const Sidebar = () => {
                   {user?.email || 'user@minigpt.dev'}
                 </span>
               </div>
-            )}
-          </div>
-          {isSidebarOpen && (
+            </div>
             <button
               type="button"
               onClick={handleLogout}
@@ -393,8 +449,34 @@ export const Sidebar = () => {
             >
               <LogOut className="w-4 h-4" />
             </button>
-          )}
-        </div>
+          </div>
+        ) : (
+          <>
+            <ThemeToggle className="mx-auto" />
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold cursor-pointer transition-transform hover:scale-105"
+              style={{
+                backgroundColor: 'var(--bg-accent)',
+                color: 'var(--text-on-accent)'
+              }}
+              title={`${user?.name || 'MiniGPT User'} (${user?.email || 'user@minigpt.dev'})`}
+            >
+              {(user?.name || 'U')[0].toUpperCase()}
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'; }}
+              title="Logout"
+              aria-label="Logout"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </>
+        )}
       </div>
     </aside>
   );

@@ -46,7 +46,7 @@ export const routeAndExecute = async ({
   try {
     const dbFiles = await prisma.file.findMany({
       where: { userId },
-      select: { id: true, name: true, size: true, chunkCount: true },
+      select: { id: true, name: true, size: true, type: true },
       orderBy: { createdAt: 'desc' }
     }).catch(() => []);
     const memFiles = getInMemoryFiles(userId);

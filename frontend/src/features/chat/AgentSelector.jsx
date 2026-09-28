@@ -64,7 +64,6 @@ export const AGENTS = [
 
 export const MODELS = [
   { id: 'gemini', name: 'Gemini Flash', provider: 'Google', icon: Sparkles },
-  { id: 'openai', name: 'GPT-4o Mini', provider: 'OpenAI', icon: Cpu },
   { id: 'mistral', name: 'Mistral AI', provider: 'Mistral', icon: Zap }
 ];
 

@@ -23,7 +23,7 @@ export const Layout = () => {
     if (location.pathname.startsWith('/files')) return 'Documents & RAG';
     if (location.pathname.startsWith('/knowledge')) return 'Memory Bank';
     if (location.pathname.startsWith('/settings')) return 'Settings';
-    return 'MiniGPT';
+    return 'Agent AI';
   };
 
   return (
