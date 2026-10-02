@@ -1,10 +1,10 @@
 services:
   - type: web
-    name: minigpt-backend
-    env: node
-    rootDir: backend
-    buildCommand: npm install && npx prisma@5.16.0 generate --schema=prisma/schema.prisma
-    startCommand: npm start
+    name: akashagent-backend
+    env: python
+    rootDir: backend-python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: NODE_ENV
         value: production
@@ -13,4 +13,12 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: GEMINI_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: SERPAPI_KEY
         sync: false
