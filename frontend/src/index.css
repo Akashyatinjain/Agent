@@ -81,10 +81,13 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
-html {
+html, :root {
   scroll-behavior: smooth;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -100,7 +103,7 @@ body {
 }
 
 /* ═══════════════════════════════════════
-   SCROLLBAR
+   SCROLLBAR — Smooth & Minimalist
    ═══════════════════════════════════════ */
 
 ::-webkit-scrollbar {
@@ -115,10 +118,18 @@ body {
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: 9999px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-hover);
+}
+
+/* Universal Smooth Scroll & Touch Momentum */
+.overflow-y-auto, .overflow-x-auto, .overflow-auto {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* ═══════════════════════════════════════

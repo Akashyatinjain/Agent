@@ -42,6 +42,14 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
     }
   };
 
+  const handleInputChange = (e) => {
+    setInput(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(Math.max(textareaRef.current.scrollHeight, 44), 180)}px`;
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (isGenerating && onStop) {
@@ -52,6 +60,9 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
     onSend(input.trim(), attachedFile);
     setInput('');
     setAttachedFile(null);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
   };
 
   const handleKeyDown = (e) => {
@@ -126,9 +137,9 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
 
         <textarea
           ref={textareaRef}
-          rows={2}
+          rows={1}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder={
             attachedFile
@@ -136,10 +147,12 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
               : "Ask anything, search web, query your documents, or review your resume..."
           }
           disabled={disabled || isUploadingFile}
-          className="w-full bg-transparent text-sm p-2.5 focus:outline-none resize-none"
+          className="w-full bg-transparent text-sm p-2.5 focus:outline-none resize-none leading-relaxed transition-all"
           style={{
             color: 'var(--text-primary)',
-            caretColor: 'var(--text-primary)'
+            caretColor: 'var(--text-primary)',
+            minHeight: '44px',
+            maxHeight: '180px'
           }}
         />
 
