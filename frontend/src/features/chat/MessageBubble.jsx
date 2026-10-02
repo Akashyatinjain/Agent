@@ -11,6 +11,51 @@ import ToolCallDisplay from './ToolCallDisplay';
 import RagContextDisplay from './RagContextDisplay';
 import useUIStore from '../../store/uiStore';
 
+// Pre-sanitized Prism styles to remove textShadow and background artifacts in both themes
+const sanitizeTheme = (theme) => {
+  const sanitized = {};
+  for (const [key, value] of Object.entries(theme)) {
+    if (typeof value === 'object' && value !== null) {
+      const copy = { ...value };
+      delete copy.textShadow;
+      if (copy.background && copy.background !== 'inherit') {
+        if (!key.includes('inserted') && !key.includes('deleted')) {
+          delete copy.background;
+          delete copy.backgroundColor;
+        }
+      }
+      sanitized[key] = copy;
+    } else {
+      sanitized[key] = value;
+    }
+  }
+
+  if (sanitized['pre[class*="language-"]']) {
+    sanitized['pre[class*="language-"]'] = {
+      ...sanitized['pre[class*="language-"]'],
+      background: 'transparent',
+      backgroundColor: 'transparent',
+      textShadow: 'none',
+      border: 'none',
+      boxShadow: 'none',
+      margin: 0,
+      padding: 0
+    };
+  }
+  if (sanitized['code[class*="language-"]']) {
+    sanitized['code[class*="language-"]'] = {
+      ...sanitized['code[class*="language-"]'],
+      background: 'transparent',
+      backgroundColor: 'transparent',
+      textShadow: 'none'
+    };
+  }
+  return sanitized;
+};
+
+const sanitizedDarkTheme = sanitizeTheme(oneDark);
+const sanitizedLightTheme = sanitizeTheme(oneLight);
+
 const CodeBlock = ({ language, code, isDark }) => {
   const [copied, setCopied] = useState(false);
 
@@ -20,35 +65,96 @@ const CodeBlock = ({ language, code, isDark }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const normalizedLang = (language || 'code').toLowerCase();
+
   return (
-    <div className="relative group my-3 rounded-xl overflow-hidden max-w-full" style={{ border: '1px solid var(--border-primary)' }}>
+    <div
+      className="code-block-wrapper relative group my-3.5 rounded-xl overflow-hidden max-w-full theme-transition"
+      style={{
+        border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #e2e8f0',
+        backgroundColor: isDark ? '#0d0e12' : '#f8fafc',
+        boxShadow: isDark
+          ? '0 4px 20px -2px rgba(0, 0, 0, 0.4)'
+          : '0 2px 8px -2px rgba(0, 0, 0, 0.04)'
+      }}
+    >
+      {/* Code Header Bar */}
       <div
-        className="flex items-center justify-between px-3 py-1.5 text-[11px] font-mono select-none"
-        style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--text-muted)' }}
+        className="flex items-center justify-between px-3.5 py-2 text-[11px] font-mono select-none"
+        style={{
+          backgroundColor: isDark ? '#15161c' : '#f1f5f9',
+          borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid #e2e8f0'
+        }}
       >
-        <span>{language || 'text'}</span>
+        <div className="flex items-center gap-2">
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{
+              backgroundColor: isDark ? '#38bdf8' : '#0284c7'
+            }}
+          />
+          <span
+            className="font-semibold tracking-wider uppercase text-[11px]"
+            style={{
+              color: isDark ? '#cbd5e1' : '#475569'
+            }}
+          >
+            {normalizedLang}
+          </span>
+        </div>
+
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-0.5 px-1.5 rounded"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-150 cursor-pointer"
+          style={{
+            background: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
+            border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+            color: copied ? (isDark ? '#34d399' : '#059669') : (isDark ? '#e2e8f0' : '#475569')
+          }}
           title="Copy code"
         >
-          {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-          <span>{copied ? 'Copied' : 'Copy'}</span>
+          {copied ? (
+            <>
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-emerald-400 font-semibold">Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3.5 h-3.5" />
+              <span>Copy</span>
+            </>
+          )}
         </button>
       </div>
+
+      {/* Code Content Area */}
       <div className="overflow-x-auto max-w-full">
         <SyntaxHighlighter
-          style={isDark ? oneDark : oneLight}
-          language={language || 'text'}
+          style={isDark ? sanitizedDarkTheme : sanitizedLightTheme}
+          language={normalizedLang === 'code' ? 'text' : normalizedLang}
           PreTag="div"
+          codeTagProps={{
+            style: {
+              background: 'transparent',
+              backgroundColor: 'transparent',
+              fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace",
+              display: 'block',
+              width: '100%',
+              lineHeight: '1.65'
+            }
+          }}
           customStyle={{
             margin: 0,
-            padding: '12px 16px',
-            fontSize: '12px',
-            backgroundColor: isDark ? '#141417' : '#f8f9fa',
+            padding: '16px 20px',
+            fontSize: '13px',
+            lineHeight: '1.65',
+            background: 'transparent',
+            backgroundColor: 'transparent',
             borderRadius: 0,
-            maxWidth: '100%'
+            maxWidth: '100%',
+            overflow: 'visible',
+            fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace"
           }}
         >
           {code}
@@ -279,6 +385,9 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
                   </blockquote>
                 );
               },
+              pre({ children }) {
+                return <>{children}</>;
+              },
               code({ node, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || '');
                 const isCodeBlock = match || String(children).includes('\n');
@@ -295,11 +404,11 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
 
                 return (
                   <code
-                    className="px-1.5 py-0.5 rounded font-mono text-xs"
+                    className="inline-code px-1.5 py-0.5 mx-0.5 rounded-md font-mono text-[12px] font-medium"
                     style={{
-                      backgroundColor: 'var(--bg-secondary)',
-                      border: '1px solid var(--border-secondary)',
-                      color: 'var(--text-primary)'
+                      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+                      border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'}`,
+                      color: isDark ? '#f1f5f9' : '#0f172a'
                     }}
                     {...props}
                   >

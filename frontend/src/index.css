@@ -246,3 +246,40 @@ textarea {
 textarea::-webkit-scrollbar {
   display: none;
 }
+
+/* ═══════════════════════════════════════
+   CODE BLOCK & SYNTAX HIGHLIGHTING
+   ═══════════════════════════════════════ */
+
+.code-block-wrapper pre,
+.code-block-wrapper code,
+.code-block-wrapper .token {
+  background: transparent !important;
+  background-color: transparent !important;
+  text-shadow: none !important;
+}
+
+.code-block-wrapper code {
+  font-family: var(--font-family-mono, 'JetBrains Mono', Consolas, Monaco, monospace) !important;
+  font-feature-settings: 'calt' 1, 'liga' 1;
+}
+
+/* Custom scrollbar inside code blocks */
+.code-block-wrapper ::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.code-block-wrapper ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.code-block-wrapper ::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  transition: background 0.2s ease;
+}
+
+.code-block-wrapper ::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
