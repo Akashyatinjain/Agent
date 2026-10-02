@@ -136,7 +136,7 @@ export const ChatWindow = () => {
             activeConversationIdRef.current = data.conversationId;
             setCurrentConversationId(data.conversationId);
             if (window.location.pathname !== `/chat/${data.conversationId}`) {
-              window.history.replaceState(null, '', `/chat/${data.conversationId}`);
+              navigate(`/chat/${data.conversationId}`, { replace: true });
             }
           } else if (eventName === 'router_intent') {
             setActiveRouterIntent(data);
