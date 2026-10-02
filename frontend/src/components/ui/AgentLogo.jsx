@@ -8,30 +8,26 @@ export const AgentLogo = ({ size = 32, className = '' }) => {
       viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`shrink-0 ${className}`}
+      className={`shrink-0 transition-transform ${className}`}
+      aria-hidden="true"
     >
-      <defs>
-        <linearGradient id="agentGradientComponent" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#4F46E5" />
-          <stop offset="50%" stopColor="#7C3AED" />
-          <stop offset="100%" stopColor="#06B6D4" />
-        </linearGradient>
-      </defs>
+      {/* Sleek Minimalist Squircle Container */}
+      <rect
+        width="100"
+        height="100"
+        rx="24"
+        fill="currentColor"
+        className="text-zinc-900 dark:text-zinc-100"
+      />
 
-      {/* Dark Obsidian Squircle */}
-      <rect x="4" y="4" width="92" height="92" rx="26" fill="#0A0D17" stroke="url(#agentGradientComponent)" strokeWidth="3" />
-
-      {/* Autonomous Agent 'A' Apex Wings */}
-      <path d="M50 18 L80 72 L64 72 L50 44 L36 72 L20 72 Z" fill="url(#agentGradientComponent)" />
-
-      {/* Intelligent Neural Core / Diamond Spark */}
-      <polygon points="50,36 61,51 50,66 39,51" fill="#FFFFFF" />
-      <circle cx="50" cy="51" r="4.5" fill="#06B6D4" />
-
-      {/* Constellation Aperture Points */}
-      <circle cx="50" cy="20" r="3" fill="#E0E7FF" />
-      <circle cx="24" cy="68" r="2.5" fill="#38BDF8" />
-      <circle cx="76" cy="68" r="2.5" fill="#38BDF8" />
+      {/* Razor-sharp Minimalist Geometric 'A' Monogram */}
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M50 20L78 78H63.5L50 49L36.5 78H22L50 20ZM50 36L58 52H42L50 36Z"
+        fill="currentColor"
+        className="text-white dark:text-zinc-950"
+      />
     </svg>
   );
 };

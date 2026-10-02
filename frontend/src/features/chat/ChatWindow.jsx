@@ -11,6 +11,7 @@ import {
   FileText, Menu, Plus, Compass, Code, Search
 } from 'lucide-react';
 import { AGENTS } from './AgentSelector';
+import AgentLogo from '../../components/ui/AgentLogo';
 
 export const ChatWindow = () => {
   const {
@@ -38,6 +39,7 @@ export const ChatWindow = () => {
   const activeConversationIdRef = useRef(currentConversationId);
   const abortControllerRef = useRef(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const isAutoScrollEnabledRef = useRef(true);
   const containerRef = useRef(null);
   const composerInputRef = useRef(null);
 
@@ -59,6 +61,7 @@ export const ChatWindow = () => {
   }, [currentConversationId]);
 
   const handleNewChatClick = useCallback(() => {
+    isAutoScrollEnabledRef.current = true;
     startNewChat();
     setActiveSelectedDoc(null);
     navigate('/chat');
@@ -77,17 +80,35 @@ export const ChatWindow = () => {
   }, [handleNewChatClick]);
 
   const scrollToBottom = (smooth = true) => {
-    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+    isAutoScrollEnabledRef.current = true;
+    setShowScrollBottom(false);
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: smooth ? 'smooth' : 'auto'
+      });
+    }
   };
 
+  // Smart auto-scroll: continuously scrolls while streaming without stutter, pauses if user scrolled up
   useEffect(() => {
-    scrollToBottom(true);
+    if (!containerRef.current || !isAutoScrollEnabledRef.current) return;
+    const container = containerRef.current;
+    if (isGenerating) {
+      container.scrollTop = container.scrollHeight;
+    } else {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages, isGenerating]);
 
   const handleScroll = () => {
     if (!containerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-    const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 120;
+    isAutoScrollEnabledRef.current = isNearBottom;
     setShowScrollBottom(!isNearBottom);
   };
 
@@ -97,6 +118,9 @@ export const ChatWindow = () => {
 
   const handleSendMessage = async (text, attachedFile = null) => {
     if (!text || isGenerating) return;
+
+    isAutoScrollEnabledRef.current = true;
+    setShowScrollBottom(false);
 
     const fileToAttach = attachedFile || activeSelectedDoc || null;
 
@@ -236,6 +260,7 @@ export const ChatWindow = () => {
           </button>
 
           <div className="flex items-center gap-2 min-w-0">
+            <AgentLogo size={22} className="shrink-0" />
             <span className="font-bold text-sm tracking-tight" style={{ color: 'var(--text-primary)' }}>
               Agent AI
             </span>
@@ -340,16 +365,8 @@ export const ChatWindow = () => {
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-full text-center space-y-5 sm:space-y-6 max-w-2xl mx-auto py-4 sm:py-8 px-2 animate-fade-in my-auto">
             {/* Header Greeting */}
-            <div className="space-y-2">
-              <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto shadow-xs"
-                style={{
-                  backgroundColor: 'var(--bg-accent)',
-                  color: 'var(--text-on-accent)'
-                }}
-              >
-                <Sparkles className="w-6 h-6" />
-              </div>
+            <div className="space-y-3">
+              <AgentLogo size={44} className="mx-auto shadow-xs transition-transform hover:scale-105" />
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 What can I help with today?
               </h2>
