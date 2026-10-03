@@ -28,7 +28,7 @@ export const Layout = () => {
 
   return (
     <div
-      className="flex h-[100dvh] w-full overflow-hidden theme-transition relative"
+      className="fixed inset-0 flex h-full h-[100dvh] w-full overflow-hidden theme-transition"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
       <Sidebar />

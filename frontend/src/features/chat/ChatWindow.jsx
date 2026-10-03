@@ -237,7 +237,7 @@ export const ChatWindow = () => {
 
   return (
     <div
-      className="flex flex-col h-full w-full relative theme-transition min-h-0"
+      className="flex flex-col h-full w-full relative theme-transition min-h-0 overflow-hidden"
       style={{ backgroundColor: 'var(--bg-primary)' }}
     >
       {/* Sleek Top Navigation Header */}
@@ -447,7 +447,7 @@ export const ChatWindow = () => {
 
       {/* Sticky Message Composer */}
       <div
-        className="p-2 sm:p-4 md:p-6 theme-transition shrink-0"
+        className="px-2.5 py-1.5 sm:p-4 md:p-6 theme-transition shrink-0 pb-[max(0.375rem,env(safe-area-inset-bottom))]"
         style={{
           borderTop: '1px solid var(--border-primary)',
           backgroundColor: 'var(--bg-primary)',
