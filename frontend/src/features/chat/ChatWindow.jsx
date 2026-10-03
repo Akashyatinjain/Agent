@@ -353,7 +353,7 @@ export const ChatWindow = () => {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4"
+        className="flex-1 overflow-y-auto px-2.5 py-3 sm:p-6 pb-16 sm:pb-8 space-y-3 sm:space-y-4"
       >
         {isLoadingMessages ? (
           <div className="flex flex-col items-center justify-center h-full text-center space-y-3 animate-fade-in my-auto">
@@ -363,11 +363,11 @@ export const ChatWindow = () => {
             </p>
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-full text-center space-y-5 sm:space-y-6 max-w-2xl mx-auto py-4 sm:py-8 px-2 animate-fade-in my-auto">
+          <div className="flex flex-col items-center justify-start sm:justify-center min-h-full text-center space-y-4 sm:space-y-6 max-w-2xl mx-auto py-3 sm:py-8 px-1 sm:px-2 animate-fade-in pb-10 sm:pb-4">
             {/* Header Greeting */}
-            <div className="space-y-3">
-              <AgentLogo size={44} className="mx-auto shadow-xs transition-transform hover:scale-105" />
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+            <div className="space-y-2.5 sm:space-y-3">
+              <AgentLogo size={40} className="mx-auto shadow-xs transition-transform hover:scale-105" />
+              <h2 className="text-xl sm:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 What can I help with today?
               </h2>
               <p className="text-xs sm:text-sm max-w-md mx-auto" style={{ color: 'var(--text-tertiary)' }}>
@@ -376,13 +376,13 @@ export const ChatWindow = () => {
             </div>
 
             {/* Prompt Suggestion Cards (GPT Style) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full text-left pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 w-full text-left pt-1 sm:pt-2">
               {promptCategories.map((card) => (
                 <button
                   key={card.title}
                   type="button"
                   onClick={() => handleSendMessage(card.prompt, null)}
-                  className="p-3.5 rounded-2xl text-left space-y-1.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] group cursor-pointer"
+                  className="p-3 sm:p-3.5 rounded-2xl text-left space-y-1 sm:space-y-1.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] group cursor-pointer"
                   style={{
                     backgroundColor: 'var(--bg-card)',
                     border: '1px solid var(--border-primary)',
@@ -425,6 +425,7 @@ export const ChatWindow = () => {
             );
           })
         )}
+        <div className="h-4 sm:h-2 shrink-0" />
         <div ref={messagesEndRef} />
       </div>
 
@@ -432,7 +433,7 @@ export const ChatWindow = () => {
       {showScrollBottom && (
         <button
           onClick={() => scrollToBottom(true)}
-          className="absolute bottom-24 right-6 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110 z-20 cursor-pointer"
+          className="absolute bottom-32 sm:bottom-28 right-4 sm:right-6 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110 z-20 cursor-pointer"
           style={{
             backgroundColor: 'var(--bg-secondary)',
             border: '1px solid var(--border-primary)',

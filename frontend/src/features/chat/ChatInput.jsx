@@ -144,7 +144,7 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
           placeholder={
             attachedFile
               ? `Ask anything about "${attachedFile.name}"...`
-              : "Ask anything, search web, query your documents, or review your resume..."
+              : "Ask anything??"
           }
           disabled={disabled || isUploadingFile}
           className="w-full bg-transparent text-sm p-2.5 focus:outline-none resize-none leading-relaxed transition-all"
@@ -175,7 +175,7 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || isUploadingFile || isGenerating}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 shrink-0 cursor-pointer hover:scale-105"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-semibold transition-all duration-150 shrink-0 cursor-pointer hover:scale-105"
               style={{
                 backgroundColor: 'var(--bg-secondary)',
                 color: 'var(--text-secondary)',
@@ -197,11 +197,11 @@ export const ChatInput = ({ onSend, onStop, disabled, isGenerating, activeDocume
             disabled={(!input.trim() && !isGenerating) || disabled || isUploadingFile}
             className="p-2.5 sm:p-3 rounded-xl transition-all duration-200 flex-shrink-0 disabled:opacity-40 cursor-pointer"
             style={{
-              backgroundColor: isGenerating 
-                ? '#ef4444' 
+              backgroundColor: isGenerating
+                ? '#ef4444'
                 : (!input.trim() || disabled || isUploadingFile ? 'var(--bg-hover)' : 'var(--bg-accent)'),
-              color: isGenerating 
-                ? '#ffffff' 
+              color: isGenerating
+                ? '#ffffff'
                 : (!input.trim() || disabled || isUploadingFile ? 'var(--text-muted)' : 'var(--text-on-accent)'),
               boxShadow: !input.trim() || disabled || isUploadingFile ? 'none' : 'var(--shadow-sm)'
             }}

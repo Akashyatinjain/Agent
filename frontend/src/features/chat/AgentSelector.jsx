@@ -99,7 +99,7 @@ export const AgentSelector = () => {
         type="button"
         disabled={isGenerating}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer disabled:opacity-60 hover:scale-[1.02]"
+        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl text-[11px] sm:text-xs font-semibold transition-all duration-150 cursor-pointer disabled:opacity-60 hover:scale-[1.02]"
         style={{
           backgroundColor: 'var(--bg-secondary)',
           border: '1px solid var(--border-primary)',
@@ -116,7 +116,7 @@ export const AgentSelector = () => {
       {/* Popup Menu */}
       {isOpen && (
         <div
-          className="absolute left-0 bottom-full mb-2 w-72 sm:w-84 rounded-2xl p-2.5 z-50 animate-scale-in shadow-2xl"
+          className="absolute left-0 bottom-full mb-2 w-72 sm:w-84 max-w-[calc(100vw-32px)] rounded-2xl p-2.5 z-50 animate-scale-in shadow-2xl"
           style={{
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border-primary)',

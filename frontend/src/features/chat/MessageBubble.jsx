@@ -56,7 +56,7 @@ const sanitizeTheme = (theme) => {
 const sanitizedDarkTheme = sanitizeTheme(oneDark);
 const sanitizedLightTheme = sanitizeTheme(oneLight);
 
-const CodeBlock = ({ language, code, isDark }) => {
+const CodeBlock = React.memo(({ language, code, isDark, isStreaming = false }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -65,11 +65,23 @@ const CodeBlock = ({ language, code, isDark }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleWheel = (e) => {
+    // If vertical scroll (deltaY != 0) is predominant and user is not holding Shift (horizontal scroll),
+    // forward the vertical scroll to the nearest scrollable chat container (.overflow-y-auto)
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && !e.shiftKey) {
+      const scrollParent = e.currentTarget.closest('.overflow-y-auto');
+      if (scrollParent) {
+        scrollParent.scrollTop += e.deltaY;
+      }
+    }
+  };
+
   const normalizedLang = (language || 'code').toLowerCase();
 
   return (
     <div
-      className="code-block-wrapper relative group my-3.5 rounded-xl overflow-hidden max-w-full theme-transition"
+      className="code-block-wrapper relative group my-2.5 sm:my-3.5 rounded-xl overflow-hidden w-full max-w-full theme-transition"
+      onWheel={handleWheel}
       style={{
         border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #e2e8f0',
         backgroundColor: isDark ? '#0d0e12' : '#f8fafc',
@@ -80,33 +92,38 @@ const CodeBlock = ({ language, code, isDark }) => {
     >
       {/* Code Header Bar */}
       <div
-        className="flex items-center justify-between px-3.5 py-2 text-[11px] font-mono select-none"
+        className="flex items-center justify-between px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-[11px] font-mono select-none"
         style={{
           backgroundColor: isDark ? '#15161c' : '#f1f5f9',
           borderBottom: isDark ? '1px solid rgba(255, 255, 255, 0.06)' : '1px solid #e2e8f0'
         }}
       >
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <span
-            className="w-2 h-2 rounded-full"
+            className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full"
             style={{
               backgroundColor: isDark ? '#38bdf8' : '#0284c7'
             }}
           />
           <span
-            className="font-semibold tracking-wider uppercase text-[11px]"
+            className="font-semibold tracking-wider uppercase text-[10px] sm:text-[11px]"
             style={{
               color: isDark ? '#cbd5e1' : '#475569'
             }}
           >
             {normalizedLang}
           </span>
+          {isStreaming && (
+            <span className="text-[10px] text-amber-500 animate-pulse ml-1 font-mono">
+              typing...
+            </span>
+          )}
         </div>
 
         <button
           type="button"
           onClick={handleCopy}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium transition-all duration-150 cursor-pointer"
+          className="flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[10px] sm:text-[11px] font-medium transition-all duration-150 cursor-pointer"
           style={{
             background: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)',
             border: isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
@@ -116,12 +133,12 @@ const CodeBlock = ({ language, code, isDark }) => {
         >
           {copied ? (
             <>
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400" />
               <span className="text-emerald-400 font-semibold">Copied!</span>
             </>
           ) : (
             <>
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               <span>Copy</span>
             </>
           )}
@@ -129,40 +146,75 @@ const CodeBlock = ({ language, code, isDark }) => {
       </div>
 
       {/* Code Content Area */}
-      <div className="overflow-x-auto max-w-full">
-        <SyntaxHighlighter
-          style={isDark ? sanitizedDarkTheme : sanitizedLightTheme}
-          language={normalizedLang === 'code' ? 'text' : normalizedLang}
-          PreTag="div"
-          codeTagProps={{
-            style: {
+      <div
+        className="overflow-x-auto overflow-y-hidden w-full max-w-full"
+        style={{
+          overscrollBehaviorX: 'contain',
+          overscrollBehaviorY: 'auto',
+          touchAction: 'pan-y pan-x',
+          WebkitOverflowScrolling: 'touch'
+        }}
+      >
+        {isStreaming ? (
+          // Fast-path raw renderer while streaming: avoids heavy synchronous Prism parsing on every token!
+          <pre
+            className="m-0 p-2.5 sm:p-4 text-[11.5px] sm:text-[13px] font-mono leading-relaxed"
+            style={{
               background: 'transparent',
               backgroundColor: 'transparent',
-              fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace",
-              display: 'block',
-              width: '100%',
-              lineHeight: '1.65'
-            }
-          }}
-          customStyle={{
-            margin: 0,
-            padding: '16px 20px',
-            fontSize: '13px',
-            lineHeight: '1.65',
-            background: 'transparent',
-            backgroundColor: 'transparent',
-            borderRadius: 0,
-            maxWidth: '100%',
-            overflow: 'visible',
-            fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace"
-          }}
-        >
-          {code}
-        </SyntaxHighlighter>
+              color: isDark ? '#e2e8f0' : '#1e293b',
+              whiteSpace: 'pre',
+              wordBreak: 'normal',
+              overflowWrap: 'normal',
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              overscrollBehaviorX: 'contain',
+              overscrollBehaviorY: 'auto',
+              touchAction: 'pan-y pan-x',
+              WebkitOverflowScrolling: 'touch'
+            }}
+          >
+            <code className="block min-w-full font-mono">{code}</code>
+          </pre>
+        ) : (
+          <SyntaxHighlighter
+            style={isDark ? sanitizedDarkTheme : sanitizedLightTheme}
+            language={normalizedLang === 'code' ? 'text' : normalizedLang}
+            PreTag="div"
+            codeTagProps={{
+              style: {
+                background: 'transparent',
+                backgroundColor: 'transparent',
+                fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace",
+                display: 'block',
+                minWidth: '100%',
+                lineHeight: '1.6'
+              }
+            }}
+            customStyle={{
+              margin: 0,
+              padding: '10px 14px',
+              fontSize: '12px',
+              lineHeight: '1.6',
+              background: 'transparent',
+              backgroundColor: 'transparent',
+              borderRadius: 0,
+              maxWidth: '100%',
+              overflowX: 'auto',
+              overflowY: 'hidden',
+              overscrollBehaviorX: 'contain',
+              overscrollBehaviorY: 'auto',
+              touchAction: 'pan-y pan-x',
+              fontFamily: "'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace"
+            }}
+          >
+            {code}
+          </SyntaxHighlighter>
+        )}
       </div>
     </div>
   );
-};
+});
 
 export const MessageBubble = ({ message, isStreaming = false, onRegenerate = null, onRetry = null }) => {
   const [copied, setCopied] = useState(false);
@@ -239,7 +291,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
 
   return (
     <div
-      className="group flex gap-3 sm:gap-4 p-4 rounded-2xl max-w-[95%] sm:max-w-2xl md:max-w-3xl transition-all duration-200"
+      className="group flex gap-2 sm:gap-4 p-2.5 sm:p-4 rounded-2xl w-full max-w-full sm:max-w-2xl md:max-w-3xl transition-all duration-200"
       style={{
         marginLeft: isUser ? 'auto' : undefined,
         marginRight: isUser ? undefined : 'auto',
@@ -247,7 +299,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
       }}
     >
       <div
-        className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+        className="w-6 h-6 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0"
         style={{
           backgroundColor: isUser
             ? (isDark ? '#3f3f46' : '#e4e4e7')
@@ -259,11 +311,11 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
         }}
       >
         {isUser ? (
-          <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <User className="w-3 h-3 sm:w-4 sm:h-4" />
         ) : isError ? (
-          <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
+          <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
         ) : (
-          <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <Sparkles className="w-3 h-3 sm:w-4 sm:h-4" />
         )}
       </div>
 
@@ -332,23 +384,23 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
         {!isUser && <ToolCallDisplay toolCalls={message.toolCalls} />}
 
         <div
-          className="prose max-w-none text-sm leading-relaxed overflow-hidden break-words space-y-2"
+          className="prose max-w-none text-xs sm:text-sm leading-relaxed overflow-hidden space-y-2"
           style={{ color: isUser ? (isDark ? '#fafafa' : '#09090b') : 'var(--text-primary)' }}
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
               h1({ children }) {
-                return <h1 className="text-lg font-bold mt-4 mb-2 pb-1 border-b border-[var(--border-secondary)]">{children}</h1>;
+                return <h1 className="text-base sm:text-lg font-bold mt-4 mb-2 pb-1 border-b border-[var(--border-secondary)]">{children}</h1>;
               },
               h2({ children }) {
-                return <h2 className="text-base font-bold mt-3.5 mb-1.5 text-emerald-500">{children}</h2>;
+                return <h2 className="text-sm sm:text-base font-bold mt-3.5 mb-1.5 text-emerald-500">{children}</h2>;
               },
               h3({ children }) {
-                return <h3 className="text-sm font-bold mt-3 mb-1.5 flex items-center gap-1.5">{children}</h3>;
+                return <h3 className="text-xs sm:text-sm font-bold mt-3 mb-1.5 flex items-center gap-1.5">{children}</h3>;
               },
               h4({ children }) {
-                return <h4 className="text-xs font-bold uppercase tracking-wider mt-2.5 mb-1 text-[var(--text-secondary)]">{children}</h4>;
+                return <h4 className="text-[11px] sm:text-xs font-bold uppercase tracking-wider mt-2.5 mb-1 text-[var(--text-secondary)]">{children}</h4>;
               },
               hr() {
                 return <hr className="my-3 border-[var(--border-secondary)] opacity-60" />;
@@ -360,7 +412,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
                 return <ol className="list-decimal list-inside space-y-1.5 my-2 pl-1 font-medium">{children}</ol>;
               },
               li({ children }) {
-                return <li className="leading-relaxed" style={{ color: 'inherit' }}>{children}</li>;
+                return <li className="leading-relaxed break-words" style={{ color: 'inherit' }}>{children}</li>;
               },
               table({ children }) {
                 return (
@@ -398,13 +450,14 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
                       language={match ? match[1] : ''}
                       code={String(children).replace(/\n$/, '')}
                       isDark={isDark}
+                      isStreaming={isStreaming}
                     />
                   );
                 }
 
                 return (
                   <code
-                    className="inline-code px-1.5 py-0.5 mx-0.5 rounded-md font-mono text-[12px] font-medium"
+                    className="inline-code px-1.5 py-0.5 mx-0.5 rounded-md font-mono text-[11px] sm:text-[12px] font-medium"
                     style={{
                       backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
                       border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'}`,
@@ -417,7 +470,7 @@ export const MessageBubble = ({ message, isStreaming = false, onRegenerate = nul
                 );
               },
               p({ children }) {
-                return <p className="mb-2 last:mb-0 leading-relaxed" style={{ color: 'inherit' }}>{children}</p>;
+                return <p className="mb-2 last:mb-0 leading-relaxed break-words" style={{ color: 'inherit' }}>{children}</p>;
               },
               strong({ children }) {
                 return <strong style={{ color: 'inherit', fontWeight: 'bold' }}>{children}</strong>;

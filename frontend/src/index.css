@@ -125,11 +125,21 @@ body {
   background: var(--scrollbar-hover);
 }
 
-/* Universal Smooth Scroll & Touch Momentum */
-.overflow-y-auto, .overflow-x-auto, .overflow-auto {
-  scroll-behavior: smooth;
+/* Touch Momentum and containment */
+.overflow-y-auto {
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  overscroll-behavior-y: contain;
+}
+
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto !important;
+  touch-action: pan-y pan-x;
+}
+
+.overflow-auto {
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ═══════════════════════════════════════
@@ -259,9 +269,22 @@ textarea::-webkit-scrollbar {
   text-shadow: none !important;
 }
 
+.code-block-wrapper pre {
+  overflow-x: auto !important;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+  -webkit-overflow-scrolling: touch;
+}
+
 .code-block-wrapper code {
   font-family: var(--font-family-mono, 'JetBrains Mono', Consolas, Monaco, monospace) !important;
   font-feature-settings: 'calt' 1, 'liga' 1;
+  white-space: pre !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+  display: block;
+  min-width: 100%;
 }
 
 /* Custom scrollbar inside code blocks */
