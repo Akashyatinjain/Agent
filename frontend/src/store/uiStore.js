@@ -8,42 +8,51 @@ const getInitialTheme = () => {
   return 'light';
 };
 
-const getInitialSidebarState = () => {
+const getInitialDesktopSidebarState = () => {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('minigpt_sidebar_open');
+    const saved = localStorage.getItem('minigpt_desktop_sidebar_open');
     if (saved !== null) {
       return saved === 'true';
     }
-    return window.innerWidth >= 1024;
   }
   return true;
 };
 
 export const useUIStore = create((set) => ({
-  isSidebarOpen: getInitialSidebarState(),
+  isDesktopSidebarOpen: getInitialDesktopSidebarState(),
+  isMobileDrawerOpen: false, // Mobile drawer ALWAYS starts closed!
+  isSidebarOpen: getInitialDesktopSidebarState(), // legacy compatibility
   isKnowledgeModalOpen: false,
   isUploadModalOpen: false,
   theme: getInitialTheme(),
 
   toggleSidebar: () => set((state) => {
-    const next = !state.isSidebarOpen;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('minigpt_sidebar_open', String(next));
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+    if (isMobile) {
+      const next = !state.isMobileDrawerOpen;
+      return { isMobileDrawerOpen: next, isSidebarOpen: next };
+    } else {
+      const next = !state.isDesktopSidebarOpen;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('minigpt_desktop_sidebar_open', String(next));
+      }
+      return { isDesktopSidebarOpen: next, isSidebarOpen: next };
     }
-    return { isSidebarOpen: next };
   }),
-  setSidebarOpen: (isOpen) => set(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('minigpt_sidebar_open', String(isOpen));
+  setSidebarOpen: (isOpen) => set((state) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+    if (isMobile) {
+      return { isMobileDrawerOpen: isOpen, isSidebarOpen: isOpen };
+    } else {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('minigpt_desktop_sidebar_open', String(isOpen));
+      }
+      return { isDesktopSidebarOpen: isOpen, isSidebarOpen: isOpen };
     }
-    return { isSidebarOpen: isOpen };
   }),
-  closeSidebarOnMobile: () => set((state) => {
-    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-      return { isSidebarOpen: false };
-    }
-    return state;
-  }),
+  openMobileDrawer: () => set({ isMobileDrawerOpen: true, isSidebarOpen: true }),
+  closeMobileDrawer: () => set({ isMobileDrawerOpen: false, isSidebarOpen: false }),
+  closeSidebarOnMobile: () => set({ isMobileDrawerOpen: false, isSidebarOpen: false }),
   setKnowledgeModalOpen: (isOpen) => set({ isKnowledgeModalOpen: isOpen }),
   setUploadModalOpen: (isOpen) => set({ isUploadModalOpen: isOpen }),
   toggleTheme: () => set((state) => {

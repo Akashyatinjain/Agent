@@ -22,9 +22,27 @@ export const Sidebar = () => {
     startNewChat,
     fetchConversations
   } = useChatStore();
-  const { isSidebarOpen, toggleSidebar, closeSidebarOnMobile } = useUIStore();
+  const {
+    isDesktopSidebarOpen,
+    isMobileDrawerOpen,
+    toggleSidebar,
+    closeMobileDrawer
+  } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = (e) => setIsDesktop(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+
+  const isExpanded = isDesktop ? isDesktopSidebarOpen : true;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -48,12 +66,12 @@ export const Sidebar = () => {
 
   const handleNewChat = () => {
     startNewChat();
-    closeSidebarOnMobile();
+    closeMobileDrawer();
     navigate('/chat');
   };
 
   const handleSelectConversation = (id) => {
-    closeSidebarOnMobile();
+    closeMobileDrawer();
     navigate(`/chat/${id}`);
   };
 
@@ -86,7 +104,7 @@ export const Sidebar = () => {
 
   const handleLogout = () => {
     logout();
-    closeSidebarOnMobile();
+    closeMobileDrawer();
     navigate('/login');
   };
 
@@ -133,20 +151,19 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out theme-transition overflow-x-hidden ${
-        isSidebarOpen
-          ? 'w-72 lg:w-64 translate-x-0'
-          : '-translate-x-full lg:translate-x-0 lg:w-16'
-      }`}
+      className={`fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto flex flex-col justify-between shrink-0 overflow-x-hidden ${
+        isMobileDrawerOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'
+      } ${
+        isDesktopSidebarOpen ? 'lg:translate-x-0 lg:w-64' : 'lg:translate-x-0 lg:w-16'
+      } w-72 transition-transform lg:transition-[width] duration-200 ease-out will-change-transform`}
       style={{
         backgroundColor: 'var(--bg-sidebar)',
         borderRight: '1px solid var(--border-primary)',
-        boxShadow: isSidebarOpen ? 'var(--shadow-xl)' : 'none'
       }}
     >
       {/* Top Header */}
-      <div className={`p-3 shrink-0 ${isSidebarOpen ? 'space-y-2.5' : 'space-y-3 flex flex-col items-center'}`}>
-        {isSidebarOpen ? (
+      <div className={`p-3 shrink-0 ${isExpanded ? 'space-y-2.5' : 'space-y-3 flex flex-col items-center'}`}>
+        {isExpanded ? (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2.5 min-w-0">
               <AgentLogo size={32} className="transition-transform hover:scale-105" />
@@ -174,7 +191,7 @@ export const Sidebar = () => {
               </button>
               <button
                 type="button"
-                onClick={toggleSidebar}
+                onClick={closeMobileDrawer}
                 className="p-1.5 rounded-lg transition-colors lg:hidden cursor-pointer"
                 style={{ color: 'var(--text-muted)' }}
                 aria-label="Close sidebar"
@@ -216,7 +233,7 @@ export const Sidebar = () => {
         )}
 
         {/* New Chat Button */}
-        {isSidebarOpen ? (
+        {isExpanded ? (
           <button
             type="button"
             onClick={handleNewChat}
@@ -252,7 +269,7 @@ export const Sidebar = () => {
         )}
 
         {/* Search Conversations Input */}
-        {isSidebarOpen && conversations.length > 3 && (
+        {isExpanded && conversations.length > 3 && (
           <div className="relative flex items-center animate-fade-in w-full">
             <Search className="absolute left-2.5 w-3.5 h-3.5 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
             <input
@@ -272,16 +289,16 @@ export const Sidebar = () => {
       </div>
 
       {/* Navigation & Grouped Conversations List */}
-      <div className={`flex-1 ${isSidebarOpen ? 'px-2.5 py-1 space-y-1' : 'px-2 py-2 space-y-2 flex flex-col items-center'} overflow-y-auto min-h-0`}>
+      <div className={`flex-1 ${isExpanded ? 'px-2.5 py-1 space-y-1' : 'px-2 py-2 space-y-2 flex flex-col items-center'} overflow-y-auto overscroll-contain min-h-0`}>
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
-            onClick={closeSidebarOnMobile}
-            title={!isSidebarOpen ? item.label : undefined}
+            onClick={closeMobileDrawer}
+            title={!isExpanded ? item.label : undefined}
             className={({ isActive }) =>
               `flex items-center rounded-xl text-xs sm:text-sm font-medium transition-all duration-150 ${
-                isSidebarOpen
+                isExpanded
                   ? 'w-full gap-2.5 px-3 py-2 justify-start'
                   : 'w-9 h-9 justify-center p-0'
               }`
@@ -293,12 +310,12 @@ export const Sidebar = () => {
             })}
           >
             <item.icon className="w-4 h-4 shrink-0" />
-            {isSidebarOpen && <span className="truncate">{item.label}</span>}
+            {isExpanded && <span className="truncate">{item.label}</span>}
           </NavLink>
         ))}
 
         {/* Chronologically Grouped Chat History */}
-        {isSidebarOpen && (
+        {isExpanded && (
           <div className="pt-2.5 mt-2 space-y-3" style={{ borderTop: '1px solid var(--border-secondary)' }}>
             {Object.entries(groupedConversations).map(([groupTitle, list]) => {
               if (list.length === 0) return null;
@@ -404,8 +421,8 @@ export const Sidebar = () => {
       </div>
 
       {/* User Footer Profile */}
-      <div className={`p-3 shrink-0 ${!isSidebarOpen ? 'flex flex-col items-center gap-2' : ''}`} style={{ borderTop: '1px solid var(--border-secondary)' }}>
-        {isSidebarOpen ? (
+      <div className={`p-3 shrink-0 ${!isExpanded ? 'flex flex-col items-center gap-2' : ''}`} style={{ borderTop: '1px solid var(--border-secondary)' }}>
+        {isExpanded ? (
           <div
             className="flex items-center justify-between p-2 rounded-xl transition-colors min-w-0"
             style={{

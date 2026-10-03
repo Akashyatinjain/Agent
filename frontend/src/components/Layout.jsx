@@ -7,12 +7,24 @@ import useUIStore from '../store/uiStore';
 import useChatStore from '../store/chatStore';
 
 export const Layout = () => {
-  const { isSidebarOpen, toggleSidebar } = useUIStore();
+  const { isMobileDrawerOpen, toggleSidebar, closeMobileDrawer } = useUIStore();
   const { startNewChat } = useChatStore();
   const location = useLocation();
   const navigate = useNavigate();
 
   const isChatRoute = location.pathname === '/chat' || location.pathname.startsWith('/chat/');
+
+  // Ensure mobile drawer is cleanly closed if screen rotates or expands to desktop
+  React.useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const handleMql = (e) => {
+      if (e.matches) {
+        closeMobileDrawer();
+      }
+    };
+    mql.addEventListener('change', handleMql);
+    return () => mql.removeEventListener('change', handleMql);
+  }, [closeMobileDrawer]);
 
   const handleNewChat = () => {
     startNewChat();
@@ -33,11 +45,11 @@ export const Layout = () => {
     >
       <Sidebar />
 
-      {/* Mobile overlay */}
-      {isSidebarOpen && (
+      {/* Mobile overlay - lightweight without laggy backdrop-blur */}
+      {isMobileDrawerOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity duration-300"
-          onClick={toggleSidebar}
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden transition-opacity duration-200"
+          onClick={closeMobileDrawer}
           aria-label="Close menu backdrop"
         />
       )}
