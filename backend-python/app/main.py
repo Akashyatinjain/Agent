@@ -7,19 +7,40 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import RequestValidationError
 
+import asyncio
 from app.core.config import settings
 from app.core.logging import logger
 from app.core.exceptions import AppException
 from app.middleware.request_id import RequestIdMiddleware
 from app.middleware.rate_limit import RateLimitMiddleware
-from app.api import health, auth, chat, files, users
+from app.api import health, auth, chat, files, users, integrations
+from app.integrations.telegram.router import router as telegram_router
+from app.integrations.whatsapp.router import router as whatsapp_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Ensure upload directory exists
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     logger.info(f"AkashAgent backend starting on port {settings.PORT} in {settings.NODE_ENV} mode")
+
+    poller_task = None
+    if settings.TELEGRAM_POLLING and settings.TELEGRAM_BOT_TOKEN:
+        try:
+            from app.integrations.telegram.poller import run_telegram_poller
+            poller_task = asyncio.create_task(run_telegram_poller())
+            logger.info("Started background Telegram poller for development")
+        except Exception as e:
+            logger.warning(f"Could not start Telegram poller: {e}")
+
     yield
+
+    if poller_task:
+        poller_task.cancel()
+        try:
+            await poller_task
+        except asyncio.CancelledError:
+            pass
+
     logger.info("AkashAgent backend shutting down")
 
 app = FastAPI(
@@ -100,6 +121,9 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(chat.router, prefix="/api")
 app.include_router(files.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
+app.include_router(integrations.router, prefix="/api")
+app.include_router(telegram_router, prefix="/api")
+app.include_router(whatsapp_router, prefix="/api")
 
 if __name__ == "__main__":
     import uvicorn

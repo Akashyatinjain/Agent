@@ -39,6 +39,17 @@ class Settings(BaseSettings):
     # Storage paths
     UPLOAD_DIR: str = str(BASE_DIR / "uploads")
 
+    # Omnichannel Integration Settings (Telegram & WhatsApp)
+    TELEGRAM_BOT_TOKEN: Optional[str] = None
+    TELEGRAM_BOT_USERNAME: Optional[str] = None
+    TELEGRAM_WEBHOOK_URL: Optional[str] = None
+    TELEGRAM_POLLING: bool = False
+
+    WHATSAPP_ACCOUNT_SID: Optional[str] = None
+    WHATSAPP_AUTH_TOKEN: Optional[str] = None
+    WHATSAPP_PHONE_NUMBER: Optional[str] = None
+    WHATSAPP_WEBHOOK_VERIFY_TOKEN: Optional[str] = "minigpt_whatsapp_verify_token"
+
     model_config = SettingsConfigDict(
         env_file=(
             str(BASE_DIR / ".env"),

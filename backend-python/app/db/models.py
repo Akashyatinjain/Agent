@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 
 from sqlalchemy import (
-    Column, String, Text, Integer, DateTime, ForeignKey, Index, func
+    Column, String, Text, Integer, Boolean, DateTime, ForeignKey, Index, func
 )
 from sqlalchemy.dialects.postgresql import JSONB, ENUM
 from sqlalchemy.orm import relationship
@@ -44,6 +44,7 @@ class User(Base):
     files = relationship("File", back_populates="user", cascade="all, delete-orphan")
     documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
     memories = relationship("Memory", back_populates="user", cascade="all, delete-orphan")
+    channels = relationship("UserChannel", back_populates="user", cascade="all, delete-orphan")
 
 class Conversation(Base):
     __tablename__ = "Conversation"
@@ -133,3 +134,21 @@ class Memory(Base):
 
     # Relationships
     user = relationship("User", back_populates="memories")
+
+class UserChannel(Base):
+    __tablename__ = "UserChannel"
+
+    id = Column(String, primary_key=True, default=generate_cuid)
+    userId = Column(String, ForeignKey("User.id", ondelete="CASCADE"), nullable=False, index=True)
+    channelType = Column(String, nullable=False)        # "TELEGRAM" | "WHATSAPP"
+    channelUserId = Column(String, nullable=False, index=True) # e.g. Telegram chat_id or WhatsApp phone
+    channelUsername = Column(String, nullable=True)     # e.g. @akash_jain
+    linkingCode = Column(String, nullable=True, index=True)
+    linkingCodeExpiresAt = Column(DateTime(timezone=True), nullable=True)
+    isVerified = Column(Boolean, default=False, nullable=False)
+
+    createdAt = Column(DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now())
+    updatedAt = Column(DateTime(timezone=True), nullable=False, default=func.now(), server_default=func.now(), onupdate=func.now())
+
+    # Relationships
+    user = relationship("User", back_populates="channels")

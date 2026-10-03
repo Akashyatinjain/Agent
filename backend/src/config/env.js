@@ -44,6 +44,10 @@ export const env = {
   AWS_S3_BUCKET: process.env.AWS_S3_BUCKET || 'minigpt-files',
   SERPAPI_KEY: process.env.SERPAPI_KEY || '',
   OPENWEATHER_API_KEY: process.env.OPENWEATHER_API_KEY || '',
+  TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
+  TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME || 'akashagentbot',
+  WHATSAPP_PHONE_NUMBER: process.env.WHATSAPP_PHONE_NUMBER || '',
+  WHATSAPP_ACCOUNT_SID: process.env.WHATSAPP_ACCOUNT_SID || '',
   isProduction: process.env.NODE_ENV === 'production',
   isDevelopment: process.env.NODE_ENV !== 'production',
 };

@@ -11,6 +11,8 @@ import authRoutes from './auth/routes.js';
 import chatRoutes from './chat/routes.js';
 import fileRoutes from './files/routes.js';
 import userRoutes from './users/routes.js';
+import integrationsRoutes from './integrations/routes.js';
+import { startTelegramPoller } from './integrations/telegramBot.js';
 
 
 const filename = fileURLToPath(import.meta.url);
@@ -92,6 +94,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/integrations', integrationsRoutes);
 
 app.use('/api/*', (req, res) => {
   res.status(404).json({
@@ -112,6 +115,7 @@ if (process.env.NODE_ENV !== 'test') {
     logger.info('Server', `🚀 MiniGPT API Server running on port ${PORT}`);
     logger.info('Server', `📡 Health Check: http://localhost:${PORT}/api/health`);
     logger.info('Server', `📋 Mode: ${env.NODE_ENV} | Client: ${env.CLIENT_URL || 'Local'}`);
+    startTelegramPoller();
   });
 
   server.on('error', (err) => {

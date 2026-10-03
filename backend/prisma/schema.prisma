@@ -28,6 +28,7 @@ model User {
   files          File[]
   documents      Document[]
   memories       Memory[]
+  channels       UserChannel[]
 
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
@@ -125,4 +126,23 @@ model Memory {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+model UserChannel {
+  id                   String    @id @default(cuid())
+  userId               String
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channelType          String
+  channelUserId        String
+  channelUsername      String?
+  linkingCode          String?
+  linkingCodeExpiresAt DateTime?
+  isVerified           Boolean   @default(false)
+
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([channelUserId])
+  @@index([linkingCode])
 }
